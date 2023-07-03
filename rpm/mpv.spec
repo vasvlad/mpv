@@ -19,6 +19,7 @@ BuildRequires:  fribidi-devel
 BuildRequires:  libass-devel
 BuildRequires:  wayland-egl-devel
 BuildRequires:  wayland-protocols-devel
+BuildRequires:  libxkbcommon-devel
 Requires:       libass
 
 %description
