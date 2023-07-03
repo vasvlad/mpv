@@ -64,7 +64,7 @@ This package contains development header files and libraries for Mpv.
 
 %prep
 %autosetup -n %{name}-%{version}/upstream -p1
-install -p -m644 -D %{SOURCE1} upstream/video/out/linux/input-event-codes.h
+install -p -m644 -D %{SOURCE1} video/out/linux/input-event-codes.h
 
 %build
 mkdir -p build
