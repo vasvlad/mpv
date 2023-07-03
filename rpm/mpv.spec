@@ -17,7 +17,8 @@ BuildRequires:  ffmpeg-devel
 BuildRequires:  harfbuzz-devel
 BuildRequires:  fribidi-devel
 BuildRequires:  libass-devel
-
+BuildRequires:  wayland-egl-devel
+BuildRequires:  wayland-protocols-devel
 Requires:       libass
 
 %description
