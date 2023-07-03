@@ -64,10 +64,10 @@ This package contains development header files and libraries for Mpv.
 
 %prep
 %autosetup -n %{name}-%{version}/upstream -p1
-install -p -m644 -D %{SOURCE1} video/out/linux/input-event-codes.h
+mkdir -p build
+install -p -m644 -D %{SOURCE1} build/linux/input-event-codes.h
 
 %build
-mkdir -p build
 pushd build
 meson -Dwayland=enabled -Dlibmpv=true --prefix=/usr ../
 ninja
