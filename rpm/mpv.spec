@@ -6,7 +6,7 @@ License:        GPL-2.0-or-later AND LGPL-2.1-or-later
 Summary:        Movie player playing most video formats and DVDs
 URL:            https://%{name}.io/
 Source0:        %{name}-%{version}.tar.bz2
-Source1:        input-event-codes.
+Source1:        input-event-codes.h
 
 BuildRequires:  desktop-file-utils
 BuildRequires:  gcc
