@@ -1,0 +1,21 @@
+diff --git a/meson.build b/meson.build
+index acaa39f764..d4da7b0986 100644
+--- a/meson.build
++++ b/meson.build
+@@ -982,7 +982,6 @@ wayland = {
+              dependency('wayland-cursor', version: '>= 1.15.0', required: get_option('wayland')),
+              dependency('wayland-protocols', version: '>= 1.15', required: get_option('wayland')),
+              dependency('xkbcommon', version: '>= 0.3.0', required: get_option('wayland'))],
+-    'header': cc.check_header('linux/input-event-codes.h', required: get_option('wayland')),
+     'scanner': find_program('wayland-scanner', required: get_option('wayland')),
+ }
+ wayland_deps = true
+@@ -992,7 +991,7 @@ foreach dep: wayland['deps']
+         break
+     endif
+ endforeach
+-features += {'wayland': wayland_deps and wayland['header'] and wayland['scanner'].found()}
++features += {'wayland': wayland_deps and wayland['scanner'].found()}
+ 
+ if features['wayland']
+     subdir(join_paths('generated', 'wayland'))

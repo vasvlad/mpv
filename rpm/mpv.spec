@@ -8,6 +8,8 @@ URL:            https://%{name}.io/
 Source0:        %{name}-%{version}.tar.bz2
 Source1:        input-event-codes.h
 
+Patch0:         0001-dont-check-input-event-codes-h.patch
+
 BuildRequires:  desktop-file-utils
 BuildRequires:  gcc
 BuildRequires:  meson
@@ -62,8 +64,7 @@ This package contains development header files and libraries for Mpv.
 
 %prep
 %autosetup -n %{name}-%{version}/upstream -p1
-mkdir -p build
-install -p -m644 -D %{SOURCE1} build/linux/input-event-codes.h
+install -p -m644 -D %{SOURCE1} upstream/video/out/linux/input-event-codes.h
 
 %build
 mkdir -p build
