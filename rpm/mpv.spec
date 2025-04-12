@@ -1,28 +1,35 @@
-Name:           mpv
+%define origname mpv
+Name:           org.meecast.mpv
 Version:        0.35.1
-Release:        0
+Release:        1+sdl
 
 License:        GPL-2.0-or-later AND LGPL-2.1-or-later
 Summary:        Movie player playing most video formats and DVDs
-URL:            https://%{name}.io/
-Source0:        %{name}-%{version}.tar.bz2
+URL:            https://%{origname}.io/
+Source0:        %{origname}-%{version}.tar.bz2
 Source1:        input-event-codes.h
+Source2:        org.meecast.mpv.desktop
+Source3:        mpv172.png
+Source4:        mpv128.png
+Source5:        mpv108.png
+Source6:        mpv86.png
 
 Patch0:         0001-dont-check-input-event-codes-h.patch
+Patch1:         sailfish_sdl.patch
 
 BuildRequires:  desktop-file-utils
 BuildRequires:  gcc
 BuildRequires:  meson
 BuildRequires:  ninja
 BuildRequires:  ccache
-BuildRequires:  ffmpeg-devel
-BuildRequires:  harfbuzz-devel
-BuildRequires:  fribidi-devel
-BuildRequires:  libass-devel
+BuildRequires:  ffmpeg-devel-static
+BuildRequires:  harfbuzz-devel-static
+BuildRequires:  fribidi-devel-static
+BuildRequires:  libass-devel-static
+BuildRequires:  SDL2-devel
 BuildRequires:  wayland-egl-devel
 BuildRequires:  wayland-protocols-devel
-BuildRequires:  libxkbcommon-devel
-Requires:       libass
+BuildRequires:  libxkbcommon-devel-static
 
 %description
 Mpv is a movie player based on MPlayer and mplayer2. It supports a wide variety
@@ -55,21 +62,21 @@ This package contains the dynamic library libmpv, which provides access to Mpv.
 
 %package devel
 Summary: Development package for libmpv
-Provides: %{name}-libs-devel = %{?epoch:%{epoch}:}%{version}-%{release}
-Obsoletes: %{name}-libs-devel < %{?epoch:%{epoch}:}%{version}-%{release}
-Requires: %{name}-libs%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
+Provides: %{origname}-libs-devel = %{?epoch:%{epoch}:}%{version}-%{release}
+Obsoletes: %{origname}-libs-devel < %{?epoch:%{epoch}:}%{version}-%{release}
+Requires: %{origname}-libs%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 
 %description devel
 This package contains development header files and libraries for Mpv.
 
 %prep
-%autosetup -n %{name}-%{version}/upstream -p1
+%autosetup -n %{origname}-%{version}/upstream -p1
 mkdir -p build
 install -p -m644 -D %{SOURCE1} build/linux/input-event-codes.h
 
 %build
 pushd build
-meson -Dwayland=enabled -Dlibmpv=true --prefix=/usr ../
+meson -Dlua=enabled -Dsdl2=enabled -Dgl=enabled -Dwayland=enabled -Dlibmpv=true --prefix=/usr --prefer-static ../
 ninja
 popd
 
@@ -77,29 +84,62 @@ popd
 pushd build
 DESTDIR=%{buildroot} meson install
 popd
+rm -rf $RPM_BUILD_ROOT/%{_datadir}/metainfo
+rm -rf $RPM_BUILD_ROOT/%{_sysconfdir}/%{origname}/encoding-profiles.conf
+rm -rf $RPM_BUILD_ROOT/%{_docdir}/
+rm -rf $RPM_BUILD_ROOT/%{_datadir}/bash-completion/
+rm -rf $RPM_BUILD_ROOT/%{_datadir}/zsh/
+rm -rf $RPM_BUILD_ROOT/%{_sysconfdir}/%{origname}/
+#rm -rf $RPM_BUILD_ROOT/%license
+mv $RPM_BUILD_ROOT/%{_bindir}/%{origname} $RPM_BUILD_ROOT/%{_bindir}/%{name}
+#rm -rf $RPM_BUILD_ROOT/%{_bindir}/%{origname}
+#cp /home/vlad/mpv /home/vlad/work/mpv/rpm/BUILDROOT/org.meecast.mpv-0.35.1-0.arm/usr/bin/org.meecast.mpv
+rm -rf $RPM_BUILD_ROOT/%{_datadir}/applications/%{origname}.desktop
+rm -rf $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/*/apps/%{origname}*.png
+rm -rf $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/*/apps/%{origname}*.svg
+cp %{SOURCE2} $RPM_BUILD_ROOT/%{_datadir}/applications/%{name}.desktop
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/172x172/apps
+cp %{SOURCE3} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/172x172/apps/org.meecast.mpv.png
+cp %{SOURCE4} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps/org.meecast.mpv.png
+cp %{SOURCE5} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps/org.meecast.mpv.png
+cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/org.meecast.mpv.png
+#For Aurora5 build
+mkdir -p $RPM_BUILD_ROOT/%{_libdir}/
+cp $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.so $RPM_BUILD_ROOT/%{_libdir}/
+cp $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.so.2* $RPM_BUILD_ROOT/%{_libdir}/
 
 %files
-%docdir %{_docdir}/%{name}/
-%license LICENSE.GPL LICENSE.LGPL Copyright
-%{_docdir}/%{name}/
+#%docdir %{_docdir}/%{origname}/
+#%license LICENSE.GPL LICENSE.LGPL Copyright
+#%{_docdir}/%{origname}/
+#%{_bindir}/%{name}
 %{_bindir}/%{name}
 %{_datadir}/applications/%{name}.desktop
-%dir %{_datadir}/bash-completion/
-%dir %{_datadir}/bash-completion/completions/
-%{_datadir}/bash-completion/completions/%{name}
-%{_datadir}/icons/hicolor/*/apps/%{name}*.*
-%dir %{_datadir}/zsh/
-%dir %{_datadir}/zsh/site-functions/
-%{_datadir}/zsh/site-functions/_%{name}
-%{_datadir}/metainfo/%{name}.metainfo.xml
-%dir %{_sysconfdir}/%{name}/
-%config(noreplace) %{_sysconfdir}/%{name}/encoding-profiles.conf
+#%dir %{_datadir}/bash-completion/
+#%dir %{_datadir}/bash-completion/completions/
+#%{_datadir}/bash-completion/completions/%{origname}
+#%{_datadir}/icons/hicolor/*/apps/%{origname}*.*
+%{_datadir}/icons/hicolor/*/apps/%{name}.png
+#%dir %{_datadir}/zsh/
+#%dir %{_datadir}/zsh/site-functions/
+#%{_datadir}/zsh/site-functions/_%{origname}
+#%{_datadir}/metainfo/%{origname}.metainfo.xml
+#%dir %{_sysconfdir}/%{origname}/
+#%config(noreplace) %{_sysconfdir}/%{origname}/encoding-profiles.conf
 
 %files libs
 %license LICENSE.GPL LICENSE.LGPL Copyright
-%{_libdir}/lib%{name}.so.2*
+%{_libdir}/lib%{origname}.so.2*
+%{_libdir}64/lib%{origname}.so.2*
+%{_libdir}64/lib%{origname}.so
 
 %files devel
-%{_includedir}/%{name}/
-%{_libdir}/lib%{name}.so
-%{_libdir}/pkgconfig/%{name}.pc
+%{_includedir}/%{origname}/
+%{_libdir}/lib%{origname}.so
+%{_libdir}64/lib%{origname}.so
+%{_libdir}64/lib%{origname}.so.2*
+%{_libdir}/lib%{origname}.so
+%{_libdir}64/pkgconfig/%{origname}.pc

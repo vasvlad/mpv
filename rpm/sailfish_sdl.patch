@@ -1,5 +1,56 @@
+diff --git a/player/lua/osc.lua b/player/lua/osc.lua
+index a244280a35..af9fff0791 100644
+--- a/player/lua/osc.lua
++++ b/player/lua/osc.lua
+@@ -21,7 +21,7 @@ local user_opts = {
+     barmargin = 0,              -- vertical margin of top/bottombar
+     boxalpha = 80,              -- alpha of the background box,
+                                 -- 0 (opaque) to 255 (fully transparent)
+-    hidetimeout = 500,          -- duration in ms until the OSC hides if no
++    hidetimeout = 5000,          -- duration in ms until the OSC hides if no
+                                 -- mouse movement. enforced non-negative for the
+                                 -- user, but internally negative is "always-on".
+     fadeduration = 200,         -- duration of fade out in ms, 0 = no fade
+@@ -2595,7 +2595,8 @@ function tick()
+         local display_h = 360
+         local display_w = display_h * display_aspect
+         -- logo is rendered at 2^(6-1) = 32 times resolution with size 1800x1800
+-        local icon_x, icon_y = (display_w - 1800 / 32) / 2, 140
++        -- local icon_x, icon_y = (display_w - 1800 / 32) / 2, 140
++        local icon_x, icon_y = (display_w - 1800 / 32) / 2, 40
+         local line_prefix = ("{\\rDefault\\an7\\1a&H00&\\bord0\\shad0\\pos(%f,%f)}"):format(icon_x, icon_y)
+ 
+         local ass = assdraw.ass_new()
+@@ -2619,7 +2620,7 @@ function tick()
+             ass:new_event()
+             ass:pos(display_w / 2, icon_y + 65)
+             ass:an(8)
+-            ass:append("Drop files or URLs to play here.")
++            ass:append("Use the command in terminal: {\\fscy50\\fscx50} org.meecast.mpv [url|path/]filename {\\fscy100\\fscx100} to play the video.")
+         end
+         set_osd(display_w, display_h, ass.text)
+ 
+diff --git a/player/main.c b/player/main.c
+index 1c1cdf9f29..2e83872925 100644
+--- a/player/main.c
++++ b/player/main.c
+@@ -347,11 +347,12 @@ int mp_initialize(struct MPContext *mpctx, char **options)
+             return r == M_OPT_EXIT ? 1 : -1;
+     }
+ 
+-    if (opts->operation_mode == 1) {
++    // set --player-operation-mode=pseudo-gui by default
++    //if (opts->operation_mode == 1) {
+         m_config_set_profile(mpctx->mconfig, "builtin-pseudo-gui",
+                              M_SETOPT_NO_OVERWRITE);
+         m_config_set_profile(mpctx->mconfig, "pseudo-gui", 0);
+-    }
++    //}
+ 
+     // Backup the default settings, which should not be stored in the resume
+     // config files. This explicitly includes values set by config files and
 diff --git a/video/out/vo_sdl.c b/video/out/vo_sdl.c
-index adfcfb43d8..7f365aa09a 100644
+index adfcfb43d8..3066b14e09 100644
 --- a/video/out/vo_sdl.c
 +++ b/video/out/vo_sdl.c
 @@ -29,6 +29,7 @@
@@ -33,7 +84,7 @@ index adfcfb43d8..7f365aa09a 100644
      }
      *screenrc = (struct mp_rect){0, 0, mode.w, mode.h};
 +    vc->display_orientation = SDL_GetDisplayOrientation(SDL_GetWindowDisplayIndex(vc->window));
-+    SDL_Log(vo, "Display orirntation %i\n", vc->display_orientation);
++    //SDL_Log(vo, "Display orirntation %i\n", vc->display_orientation);
  }
  
  static int reconfig(struct vo *vo, struct mp_image_params *params)
@@ -42,10 +93,10 @@ index adfcfb43d8..7f365aa09a 100644
              mp_input_put_key(vo->input_ctx, MP_KEY_CLOSE_WIN);
              break;
 +        case SDL_DISPLAYEVENT:
-+            SDL_Log(vo, "Display event\n");
++            //SDL_Log(vo, "Display event\n");
 +            struct priv *vc = vo->priv;
 +            vc->display_orientation = SDL_GetDisplayOrientation(SDL_GetWindowDisplayIndex(vc->window));
-+            SDL_Log(vo, "Display orientation %i\n", vc->display_orientation);
++            //SDL_Log(vo, "Display orientation %i\n", vc->display_orientation);
 +            check_resize(vo);
 +            vo_event(vo, VO_EVENT_RESIZE);            
 +            break;

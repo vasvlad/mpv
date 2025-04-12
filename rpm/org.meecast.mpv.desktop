@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=org.meecast.mpv
+Exec=org.meecast.mpv
+Name=mpv-sdl
+Name[en]=mpv-sdl
+
+[X-Application]
+Permissions=UserDirs;RemovableMedia;Internet;Audio
+OrganizationName=org.meecast
+ApplicationName=mpv
+
+[X-Aurora-Application]
+IconMode=Crop
+
