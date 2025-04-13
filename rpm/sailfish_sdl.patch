@@ -50,7 +50,7 @@ index 1c1cdf9f29..2e83872925 100644
      // Backup the default settings, which should not be stored in the resume
      // config files. This explicitly includes values set by config files and
 diff --git a/video/out/vo_sdl.c b/video/out/vo_sdl.c
-index adfcfb43d8..3066b14e09 100644
+index adfcfb43d8..4fd76a4a7a 100644
 --- a/video/out/vo_sdl.c
 +++ b/video/out/vo_sdl.c
 @@ -29,6 +29,7 @@
@@ -69,7 +69,22 @@ index adfcfb43d8..3066b14e09 100644
  
      // options
      int allow_sw;
-@@ -402,7 +404,8 @@ static void set_fullscreen(struct vo *vo)
+@@ -365,6 +367,14 @@ static void resize(struct vo *vo, int w, int h)
+     vo->dheight = h;
+     vo_get_src_dst_rects(vo, &vc->src_rect, &vc->dst_rect,
+                          &vc->osd_res);
++    /* Chnage size for OSD */
++    if (vc->display_orientation == SDL_ORIENTATION_LANDSCAPE ||
++        vc->display_orientation == SDL_ORIENTATION_LANDSCAPE_FLIPPED){
++        int temp = vc->osd_res.h;
++        vc->osd_res.h = vc->osd_res.w;
++        vc->osd_res.w = temp;
++    }
++
+     SDL_RenderSetLogicalSize(vc->renderer, w, h);
+     vo->want_redraw = true;
+     vo_wakeup(vo);
+@@ -402,7 +412,8 @@ static void set_fullscreen(struct vo *vo)
  {
      struct priv *vc = vo->priv;
      struct mp_vo_opts *opts = vc->opts_cache->opts;
@@ -79,7 +94,7 @@ index adfcfb43d8..3066b14e09 100644
      SDL_bool prev_screensaver_state = SDL_IsScreenSaverEnabled();
  
      Uint32 fs_flag;
-@@ -441,6 +444,8 @@ static void update_screeninfo(struct vo *vo, struct mp_rect *screenrc)
+@@ -441,6 +452,8 @@ static void update_screeninfo(struct vo *vo, struct mp_rect *screenrc)
          return;
      }
      *screenrc = (struct mp_rect){0, 0, mode.w, mode.h};
@@ -88,7 +103,7 @@ index adfcfb43d8..3066b14e09 100644
  }
  
  static int reconfig(struct vo *vo, struct mp_image_params *params)
-@@ -550,6 +555,14 @@ static void wait_events(struct vo *vo, int64_t until_time_us)
+@@ -550,6 +563,14 @@ static void wait_events(struct vo *vo, int64_t until_time_us)
          case SDL_QUIT:
              mp_input_put_key(vo->input_ctx, MP_KEY_CLOSE_WIN);
              break;
@@ -103,7 +118,75 @@ index adfcfb43d8..3066b14e09 100644
          case SDL_TEXTINPUT: {
              int sdl_mod = SDL_GetModState();
              int mpv_mod = 0;
-@@ -827,6 +840,7 @@ static int preinit(struct vo *vo)
+@@ -777,14 +798,61 @@ static void draw_osd_part(struct vo *vo, int index)
+     struct osd_bitmap_surface *sfc = &vc->osd_surfaces[index];
+     int i;
+ 
++            
++
+     for (i = 0; i < sfc->num_targets; i++) {
+         struct osd_target *target = sfc->targets + i;
+-        if (target->tex)
+-            SDL_RenderCopy(vc->renderer, target->tex,
+-                           &target->source, &target->dest);
+-        if (target->tex2)
+-            SDL_RenderCopy(vc->renderer, target->tex2,
+-                           &target->source, &target->dest);
++            SDL_Rect dstrect;
++            float scale = (float)vo->dheight/(float)(target->dest.w);
++            int H = (int)(target->dest.h*scale);
++            int W = vo->dheight;
++
++            dstrect.w = W;
++            dstrect.h = H;
++            dstrect.x = ((H - W) / 2 - 1);
++            dstrect.y = (W - H) / 2  + (vo->dheight - W)/2;
++
++        if (vc->display_orientation == SDL_ORIENTATION_LANDSCAPE ||
++            vc->display_orientation == SDL_ORIENTATION_LANDSCAPE_FLIPPED){
++
++            if (vc->display_orientation == SDL_ORIENTATION_LANDSCAPE){
++                dstrect.x = -target->dest.h;
++                SDL_Log("SDL_ORIENTATION_LANDSCAPE dstrect.w %d, dstrect.h %d, dstrect.x %d, dstrect.y %d\n", dstrect.w, dstrect.h, dstrect.x, dstrect.y);
++                if (target->tex)
++                    SDL_RenderCopyEx(vc->renderer, target->tex, NULL, &dstrect, 270.0, NULL, SDL_FLIP_NONE);
++                if (target->tex2)
++                    SDL_RenderCopyEx(vc->renderer, target->tex2, NULL, &dstrect, 270.0, NULL, SDL_FLIP_NONE);
++            }else{
++                SDL_Log("SDL_ORIENTATION_LANDSCAPE_FLIPPED dstrect.w %d, dstrect.h %d, dstrect.x %d, dstrect.y %d\n", dstrect.w, dstrect.h, dstrect.x, dstrect.y);
++                if (target->tex)
++                    SDL_RenderCopyEx(vc->renderer, target->tex, NULL, &dstrect, 90.0, NULL, SDL_FLIP_NONE);
++                if (target->tex2)
++                    SDL_RenderCopyEx(vc->renderer, target->tex2, NULL, &dstrect, 90.0, NULL, SDL_FLIP_NONE);
++            }
++        }else{
++            if (vc->display_orientation == SDL_ORIENTATION_PORTRAIT){
++                SDL_Log("SDL_ORIENTATION_PORTRAIT dstrect.w %d, dstrect.h %d, dstrect.x %d, dstrect.y %d\n", dstrect.w, dstrect.h, dstrect.x, dstrect.y);
++                if (target->tex){
++                    SDL_RenderCopy(vc->renderer, target->tex,
++                                   &target->source, &target->dest);
++                }
++                if (target->tex2){
++                    SDL_RenderCopy(vc->renderer, target->tex2,
++                                   &target->source, &target->dest);
++                }
++            }else{
++                target->dest.y = dstrect.h-target->dest.h;
++                SDL_Log("SDL_ORIENTATION_PORTRAIT_FLIPPED dstrect.w %d, dstrect.h %d, dstrect.x %d, dstrect.y %d target->dest.y %d\n", dstrect.w, dstrect.h, dstrect.x, dstrect.y, target->dest.y);
++                if (target->tex){
++                    SDL_RenderCopyEx(vc->renderer, target->tex,
++                                   &target->source, &target->dest, 180.0, NULL, SDL_FLIP_NONE);
++                }
++                if (target->tex2){
++                    SDL_RenderCopyEx(vc->renderer, target->tex2,
++                                   &target->source, &target->dest, 180.0, NULL, SDL_FLIP_NONE);
++                }
++            }
++        }
+     }
+ }
+ 
+@@ -827,6 +895,7 @@ static int preinit(struct vo *vo)
      SDL_SetHintWithPriority(SDL_HINT_RENDER_VSYNC, vc->vsync ? "1" : "0",
                              SDL_HINT_OVERRIDE);
  
@@ -111,7 +194,7 @@ index adfcfb43d8..3066b14e09 100644
      if (SDL_InitSubSystem(SDL_INIT_VIDEO)) {
          MP_ERR(vo, "SDL_Init failed\n");
          return -1;
-@@ -834,7 +848,8 @@ static int preinit(struct vo *vo)
+@@ -834,7 +903,8 @@ static int preinit(struct vo *vo)
  
      // then actually try
      vc->window = SDL_CreateWindow("MPV", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -121,7 +204,7 @@ index adfcfb43d8..3066b14e09 100644
      if (!vc->window) {
          MP_ERR(vo, "SDL_CreateWindow failed\n");
          return -1;
-@@ -896,17 +911,53 @@ static void draw_image(struct vo *vo, mp_image_t *mpi)
+@@ -896,17 +966,53 @@ static void draw_image(struct vo *vo, mp_image_t *mpi)
          talloc_free(mpi);
      }
  
