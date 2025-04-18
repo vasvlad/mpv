@@ -80,7 +80,7 @@ index 1c1cdf9f29..32155320cb 100644
      // Backup the default settings, which should not be stored in the resume
      // config files. This explicitly includes values set by config files and
 diff --git a/video/out/vo_sdl.c b/video/out/vo_sdl.c
-index adfcfb43d8..07024d3ae4 100644
+index adfcfb43d8..c0fe76280b 100644
 --- a/video/out/vo_sdl.c
 +++ b/video/out/vo_sdl.c
 @@ -29,6 +29,7 @@
@@ -135,7 +135,7 @@ index adfcfb43d8..07024d3ae4 100644
  }
  
  static int reconfig(struct vo *vo, struct mp_image_params *params)
-@@ -521,6 +536,31 @@ static void wakeup(struct vo *vo)
+@@ -521,11 +536,37 @@ static void wakeup(struct vo *vo)
      SDL_PushEvent(&event);
  }
  
@@ -167,37 +167,42 @@ index adfcfb43d8..07024d3ae4 100644
  static void wait_events(struct vo *vo, int64_t until_time_us)
  {
      int64_t wait_us = until_time_us - mp_time_us();
-@@ -550,6 +590,38 @@ static void wait_events(struct vo *vo, int64_t until_time_us)
+     int timeout_ms = MPCLAMP((wait_us + 500) / 1000, 0, 10000);
+     SDL_Event ev;
++    struct priv *vc = vo->priv;
+ 
+     while (SDL_WaitEventTimeout(&ev, timeout_ms)) {
+         timeout_ms = 0;
+@@ -550,6 +591,37 @@ static void wait_events(struct vo *vo, int64_t until_time_us)
          case SDL_QUIT:
              mp_input_put_key(vo->input_ctx, MP_KEY_CLOSE_WIN);
              break;
 +        case SDL_DISPLAYEVENT:
-+            struct priv *vc = vo->priv;
 +            vc->display_orientation = SDL_GetDisplayOrientation(SDL_GetWindowDisplayIndex(vc->window));
-+        switch (vc->display_orientation) {
-+            case SDL_ORIENTATION_LANDSCAPE:
-+                SDL_Log("Display event SDL_ORIENTATION_LANDSCAPE\n");
-+                SDL_SetHint(SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION,"landscape");
-+                break;
-+            case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
-+                SDL_Log("Display event SDL_ORIENTATION_LANDSCAPE_FLIPPED\n");
-+                SDL_SetHint(SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION,"inverted-landscape");
-+                break;
-+            case SDL_ORIENTATION_PORTRAIT:
-+                SDL_Log("Display event SDL_ORIENTATION_PORTRAIT\n");
-+                SDL_SetHint(SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION,"portrait");
-+                break;
-+            case SDL_ORIENTATION_PORTRAIT_FLIPPED:
-+                SDL_Log("Display event SDL_ORIENTATION_PORTRAIT_FLIPPED\n");
-+                SDL_SetHint(SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION,"inverted-portrait");
-+                break;
-+            default:
-+            case SDL_ORIENTATION_UNKNOWN:
-+                SDL_Log("Display event SDL_ORIENTATION_UNKNOWN\n");
-+                SDL_SetHint(SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION,"landscape");
-+                // printf("SDL_DisplayOrientation is SDL_ORIENTATION_UNKNOWN\n");
-+                break;
-+        }
++            switch (vc->display_orientation) {
++                case SDL_ORIENTATION_LANDSCAPE:
++                    SDL_Log("Display event SDL_ORIENTATION_LANDSCAPE\n");
++                    SDL_SetHint(SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION,"landscape");
++                    break;
++                case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
++                    SDL_Log("Display event SDL_ORIENTATION_LANDSCAPE_FLIPPED\n");
++                    SDL_SetHint(SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION,"inverted-landscape");
++                    break;
++                case SDL_ORIENTATION_PORTRAIT:
++                    SDL_Log("Display event SDL_ORIENTATION_PORTRAIT\n");
++                    SDL_SetHint(SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION,"portrait");
++                    break;
++                case SDL_ORIENTATION_PORTRAIT_FLIPPED:
++                    SDL_Log("Display event SDL_ORIENTATION_PORTRAIT_FLIPPED\n");
++                    SDL_SetHint(SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION,"inverted-portrait");
++                    break;
++                default:
++                case SDL_ORIENTATION_UNKNOWN:
++                    SDL_Log("Display event SDL_ORIENTATION_UNKNOWN\n");
++                    SDL_SetHint(SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION,"landscape");
++                    // printf("SDL_DisplayOrientation is SDL_ORIENTATION_UNKNOWN\n");
++                    break;
++            }
 +
 +            //SDL_Log(vo, "Display orientation %i\n", vc->display_orientation);
 +            check_resize(vo);

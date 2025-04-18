@@ -54,19 +54,19 @@ is a large selection of user scripts on the wiki.
 A straightforward C API was designed from the ground up to make mpv usable as
 a library and facilitate easy integration into other applications.
 
-%package libs
+%package libs-static
 Summary: Dynamic library for Mpv frontends
 
-%description libs
+%description libs-static
 This package contains the dynamic library libmpv, which provides access to Mpv.
 
-%package devel
+%package devel-static
 Summary: Development package for libmpv
 Provides: %{origname}-libs-devel = %{?epoch:%{epoch}:}%{version}-%{release}
 Obsoletes: %{origname}-libs-devel < %{?epoch:%{epoch}:}%{version}-%{release}
 Requires: %{origname}-libs%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 
-%description devel
+%description devel-static
 This package contains development header files and libraries for Mpv.
 
 %prep
@@ -76,7 +76,7 @@ install -p -m644 -D %{SOURCE1} build/linux/input-event-codes.h
 
 %build
 pushd build
-meson -Dlua=enabled -Dsdl2=enabled -Dgl=enabled -Dwayland=enabled -Dlibmpv=true --prefix=/usr --prefer-static ../
+meson -Dlua=enabled -Dsdl2=enabled -Dgl=enabled -Dwayland=enabled -Ddefault_library=static -Dlibmpv=true --prefix=/usr --prefer-static ../
 ninja
 popd
 
@@ -107,9 +107,9 @@ cp %{SOURCE4} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps/org.meecast
 cp %{SOURCE5} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps/org.meecast.mpv.png
 cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/org.meecast.mpv.png
 #For Aurora5 build
-mkdir -p $RPM_BUILD_ROOT/%{_libdir}/
-cp $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.so $RPM_BUILD_ROOT/%{_libdir}/
-cp $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.so.2* $RPM_BUILD_ROOT/%{_libdir}/
+#mkdir -p $RPM_BUILD_ROOT/%{_libdir}/
+#cp $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.so $RPM_BUILD_ROOT/%{_libdir}/
+#cp $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.so.2* $RPM_BUILD_ROOT/%{_libdir}/
 
 %files
 #%docdir %{_docdir}/%{origname}/
@@ -130,16 +130,15 @@ cp $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.so.2* $RPM_BUILD_ROOT/%{_libdir}/
 #%dir %{_sysconfdir}/%{origname}/
 #%config(noreplace) %{_sysconfdir}/%{origname}/encoding-profiles.conf
 
-%files libs
+%files libs-static
 %license LICENSE.GPL LICENSE.LGPL Copyright
-%{_libdir}/lib%{origname}.so.2*
-%{_libdir}64/lib%{origname}.so.2*
-%{_libdir}64/lib%{origname}.so
+%{_libdir}/*.a
 
-%files devel
+%files devel-static
 %{_includedir}/%{origname}/
-%{_libdir}/lib%{origname}.so
-%{_libdir}64/lib%{origname}.so
-%{_libdir}64/lib%{origname}.so.2*
-%{_libdir}/lib%{origname}.so
-%{_libdir}64/pkgconfig/%{origname}.pc
+%{_libdir}/*.a
+#%{_libdir}64/lib%{origname}.so
+#%{_libdir}64/lib%{origname}.so.2*
+#%{_libdir}/lib%{origname}.so
+#%{_libdir}64/pkgconfig/%{origname}.pc
+%{_libdir}/pkgconfig/%{origname}.pc
