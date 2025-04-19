@@ -10,7 +10,3 @@ Name[en]=mpv-sdl
 Permissions=UserDirs;RemovableMedia;Internet;Audio
 OrganizationName=org.meecast
 ApplicationName=mpv
-
-[X-Aurora-Application]
-IconMode=Crop
-

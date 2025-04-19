@@ -80,7 +80,7 @@ index 1c1cdf9f29..32155320cb 100644
      // Backup the default settings, which should not be stored in the resume
      // config files. This explicitly includes values set by config files and
 diff --git a/video/out/vo_sdl.c b/video/out/vo_sdl.c
-index adfcfb43d8..c0fe76280b 100644
+index adfcfb43d8..92af124b2d 100644
 --- a/video/out/vo_sdl.c
 +++ b/video/out/vo_sdl.c
 @@ -29,6 +29,7 @@
@@ -219,7 +219,7 @@ index adfcfb43d8..c0fe76280b 100644
              mp_input_set_mouse_pos(vo->input_ctx, ev.motion.x, ev.motion.y);
              break;
          case SDL_MOUSEBUTTONDOWN: {
-@@ -779,12 +852,50 @@ static void draw_osd_part(struct vo *vo, int index)
+@@ -779,12 +852,53 @@ static void draw_osd_part(struct vo *vo, int index)
  
      for (i = 0; i < sfc->num_targets; i++) {
          struct osd_target *target = sfc->targets + i;
@@ -240,7 +240,7 @@ index adfcfb43d8..c0fe76280b 100644
 +        if (vc->display_orientation == SDL_ORIENTATION_LANDSCAPE ||
 +            vc->display_orientation == SDL_ORIENTATION_LANDSCAPE_FLIPPED){
 +            if (vc->display_orientation == SDL_ORIENTATION_LANDSCAPE){
-+                dstrect.x = -target->dest.h;
++                dstrect.x = vo->dwidth - dstrect.y - dstrect.h;
 +                if (target->tex)
 +                    SDL_RenderCopyEx(vc->renderer, target->tex, NULL, &dstrect, 270.0, NULL, SDL_FLIP_NONE);
 +                if (target->tex2)
@@ -253,6 +253,8 @@ index adfcfb43d8..c0fe76280b 100644
 +            }
 +        }else{
 +            if (vc->display_orientation == SDL_ORIENTATION_PORTRAIT){
++                target->dest.y = vo->dheight - target->dest.h;
++                target->dest.w = vo->dwidth;
 +                if (target->tex){
 +                    SDL_RenderCopy(vc->renderer, target->tex,
 +                                   &target->source, &target->dest);
@@ -262,7 +264,8 @@ index adfcfb43d8..c0fe76280b 100644
 +                                   &target->source, &target->dest);
 +                }
 +            }else{
-+                target->dest.y = dstrect.h-target->dest.h;
++                target->dest.w = vo->dwidth;
++                target->dest.y = 0;
 +                if (target->tex){
 +                    SDL_RenderCopyEx(vc->renderer, target->tex,
 +                                   &target->source, &target->dest, 180.0, NULL, SDL_FLIP_NONE);
@@ -276,7 +279,7 @@ index adfcfb43d8..c0fe76280b 100644
      }
  }
  
-@@ -827,6 +938,7 @@ static int preinit(struct vo *vo)
+@@ -827,6 +941,7 @@ static int preinit(struct vo *vo)
      SDL_SetHintWithPriority(SDL_HINT_RENDER_VSYNC, vc->vsync ? "1" : "0",
                              SDL_HINT_OVERRIDE);
  
@@ -284,7 +287,7 @@ index adfcfb43d8..c0fe76280b 100644
      if (SDL_InitSubSystem(SDL_INIT_VIDEO)) {
          MP_ERR(vo, "SDL_Init failed\n");
          return -1;
-@@ -834,7 +946,8 @@ static int preinit(struct vo *vo)
+@@ -834,7 +949,8 @@ static int preinit(struct vo *vo)
  
      // then actually try
      vc->window = SDL_CreateWindow("MPV", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -294,7 +297,7 @@ index adfcfb43d8..c0fe76280b 100644
      if (!vc->window) {
          MP_ERR(vo, "SDL_CreateWindow failed\n");
          return -1;
-@@ -896,17 +1009,53 @@ static void draw_image(struct vo *vo, mp_image_t *mpi)
+@@ -896,17 +1012,53 @@ static void draw_image(struct vo *vo, mp_image_t *mpi)
          talloc_free(mpi);
      }
  

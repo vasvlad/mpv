@@ -1,7 +1,7 @@
 %define origname mpv
 Name:           org.meecast.mpv
 Version:        0.35.1
-Release:        1+sdl
+Release:        2+sdl
 
 License:        GPL-2.0-or-later AND LGPL-2.1-or-later
 Summary:        Movie player playing most video formats and DVDs
@@ -132,13 +132,21 @@ cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/org.meecast.m
 
 %files libs-static
 %license LICENSE.GPL LICENSE.LGPL Copyright
-%{_libdir}/*.a
+#For Aurora4
+#%{_libdir}/*.a
+#For Aurora5
+%{_libdir}64/*.a
 
 %files devel-static
 %{_includedir}/%{origname}/
-%{_libdir}/*.a
+#For Aurora4
+#%{_libdir}/*.a
+#For Aurora5
+%{_libdir}64/*.a
 #%{_libdir}64/lib%{origname}.so
 #%{_libdir}64/lib%{origname}.so.2*
 #%{_libdir}/lib%{origname}.so
-#%{_libdir}64/pkgconfig/%{origname}.pc
-%{_libdir}/pkgconfig/%{origname}.pc
+#For Aurora4
+#%{_libdir}/pkgconfig/%{origname}.pc
+#For Aurora5
+%{_libdir}64/pkgconfig/%{origname}.pc
