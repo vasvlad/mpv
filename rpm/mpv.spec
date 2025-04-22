@@ -58,13 +58,35 @@ a library and facilitate easy integration into other applications.
 Summary: Dynamic library for Mpv frontends
 
 %description libs-static
-This package contains the dynamic library libmpv, which provides access to Mpv.
+This package contains the static library libmpv, which provides access to Mpv.
 
 %package devel-static
-Summary: Development package for libmpv
-Provides: %{origname}-libs-devel = %{?epoch:%{epoch}:}%{version}-%{release}
-Obsoletes: %{origname}-libs-devel < %{?epoch:%{epoch}:}%{version}-%{release}
-Requires: %{origname}-libs%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
+Summary: Development package for static libmpv
+Requires: ffmpeg-devel-static
+Requires: harfbuzz-devel-static
+Requires: fribidi-devel-static
+Requires: libass-devel-static
+Requires: lua-static
+Requires: expat-devel-static
+Requires: openjpeg-devel-static
+Requires: libogg-devel-static
+Requires: libxkbcommon-devel-static
+Requires: libpng-devel-static
+Requires: freetype-devel-static
+Requires: libvpx-devel-static
+Requires: opus-devel-static
+Requires: libtheora-devel-static
+Requires: libdrm-devel-static
+Requires: graphite2-devel-static
+Requires: fontconfig-devel-static
+Requires: pcre-static
+Requires: libass-devel-static
+Requires: speex-devel-static
+Requires: libwebp-devel-static
+Requires: libvorbis-devel-static
+
+
+
 
 %description devel-static
 This package contains development header files and libraries for Mpv.
@@ -107,9 +129,12 @@ cp %{SOURCE4} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps/org.meecast
 cp %{SOURCE5} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps/org.meecast.mpv.png
 cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/org.meecast.mpv.png
 #For Aurora5 build
-#mkdir -p $RPM_BUILD_ROOT/%{_libdir}/
-#cp $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.so $RPM_BUILD_ROOT/%{_libdir}/
-#cp $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.so.2* $RPM_BUILD_ROOT/%{_libdir}/
+mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
+#mv $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
+#mv $RPM_BUILD_ROOT/%{_libdir}64/pkgconfig/%{origname}.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
+#sed -i 's/lib64/lib/g' $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+sed -i "s/-lmpv/\/usr\/lib\/libmpv.a \/usr\/lib\/libavfilter.a \/usr\/lib\/libavformat.a \/usr\/lib\/libavcodec.a \/usr\/lib\/libswscale.a \/usr\/lib\/libswresample.a \/usr\/lib\/libavdevice.a \/usr\/lib\/libavutil.a \/usr\/lib\/liblua.a \/usr\/lib\/libvpx.a \/usr\/lib\/libwebpmux.a \/usr\/lib\/libwebp.a \/usr\/lib\/libwebpdecoder.a \/usr\/lib\/libtheora.a \/usr\/lib\/libspeex.a \/usr\/lib\/libopenjp2.a \/usr\/lib\/libvorbis.a \/usr\/lib\/libvorbisenc.a \/usr\/lib\/libopus.a \/usr\/lib\/libogg.a \/usr\/lib\/libxkbcommon.a \/usr\/lib\/libdrm.a \/usr\/lib\/libass.a \/usr\/lib\/libfontconfig.a \/usr\/lib\/libfreetype.a \/usr\/lib\/libharfbuzz.a \/usr\/lib\/libgraphite2.a \/usr\/lib\/libfribidi.a \/usr\/lib\/libexpat.a \/usr\/lib\/libpng.a \/usr\/lib\/libz.a -pthread -lssl -lcrypto -lbz2/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse >=  1.0, wayland-cursor >=  1.15.0, wayland-protocols >=  1.15, egl >  1.4.0, wayland-egl >=  9.0.0/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
 
 %files
 #%docdir %{_docdir}/%{origname}/
@@ -132,21 +157,9 @@ cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/org.meecast.m
 
 %files libs-static
 %license LICENSE.GPL LICENSE.LGPL Copyright
-#For Aurora4
-#%{_libdir}/*.a
-#For Aurora5
-%{_libdir}64/*.a
+%{_libdir}/*.a
 
 %files devel-static
 %{_includedir}/%{origname}/
-#For Aurora4
-#%{_libdir}/*.a
-#For Aurora5
-%{_libdir}64/*.a
-#%{_libdir}64/lib%{origname}.so
-#%{_libdir}64/lib%{origname}.so.2*
-#%{_libdir}/lib%{origname}.so
-#For Aurora4
-#%{_libdir}/pkgconfig/%{origname}.pc
-#For Aurora5
-%{_libdir}64/pkgconfig/%{origname}.pc
+%{_libdir}/*.a
+%{_libdir}/pkgconfig/%{origname}.pc

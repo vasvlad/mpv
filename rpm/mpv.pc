@@ -1,0 +1,10 @@
+prefix=/usr
+includedir=${prefix}/include
+libdir=${prefix}/lib
+
+Name: mpv
+Description: mpv media player client library
+Version: 2.0.0
+Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse >=  1.0, wayland-cursor >=  1.15.0, wayland-protocols >=  1.15, egl >  1.4.0, wayland-egl >=  9.0.0
+Libs: -L${libdir} /usr/lib/libmpv.a /usr/lib/libavfilter.a /usr/lib/libavformat.a /usr/lib/libavcodec.a /usr/lib/libswscale.a /usr/lib/libswresample.a /usr/lib/libavdevice.a /usr/lib/libavutil.a /usr/lib/liblua.a /usr/lib/libvpx.a /usr/lib/libwebpmux.a /usr/lib/libwebp.a /usr/lib/libwebpdecoder.a /usr/lib/libtheora.a /usr/lib/libspeex.a /usr/lib/libopenjp2.a /usr/lib/libvorbis.a /usr/lib/libvorbisenc.a /usr/lib/libopus.a /usr/lib/libogg.a /usr/lib/libxkbcommon.a /usr/lib/libdrm.a /usr/lib/libass.a /usr/lib/libfontconfig.a /usr/lib/libfreetype.a /usr/lib/libharfbuzz.a /usr/lib/libgraphite2.a /usr/lib/libfribidi.a /usr/lib/libexpat.a /usr/lib/libpng.a /usr/lib/libz.a -pthread -lssl -lcrypto -lbz2 -ldl -lm -lrt /srv/mer/toolings/AuroraOS-5.1.2.10-base/opt/cross/bin/../lib/gcc/armv7hl-meego-linux-gnueabi/12.3.1/../../../../armv7hl-meego-linux-gnueabi/lib/libatomic.a 
+Cflags: -I${includedir} -pthread
