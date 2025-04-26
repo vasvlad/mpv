@@ -1,14 +1,14 @@
 %define origname mpv
-Name:           org.meecast.mpv
+Name:           org.meecast.mpvsdl
 Version:        0.35.1
-Release:        2+sdl
+Release:        3
 
 License:        GPL-2.0-or-later AND LGPL-2.1-or-later
 Summary:        Movie player playing most video formats and DVDs
 URL:            https://%{origname}.io/
 Source0:        %{origname}-%{version}.tar.bz2
 Source1:        input-event-codes.h
-Source2:        org.meecast.mpv.desktop
+Source2:        org.meecast.mpvsdl.desktop
 Source3:        mpv172.png
 Source4:        mpv128.png
 Source5:        mpv108.png
@@ -124,10 +124,10 @@ mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/172x172/apps
-cp %{SOURCE3} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/172x172/apps/org.meecast.mpv.png
-cp %{SOURCE4} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps/org.meecast.mpv.png
-cp %{SOURCE5} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps/org.meecast.mpv.png
-cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/org.meecast.mpv.png
+cp %{SOURCE3} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/172x172/apps/org.meecast.mpvsdl.png
+cp %{SOURCE4} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps/org.meecast.mpvsdl.png
+cp %{SOURCE5} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps/org.meecast.mpvsdl.png
+cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/org.meecast.mpvsdl.png
 ##For Aurora5 arm build
 #mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
 ##mv $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
@@ -182,3 +182,7 @@ sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse
 %{_includedir}/%{origname}/
 %{_libdir}/*.a
 %{_libdir}/pkgconfig/%{origname}.pc
+
+%changelog
+* Thu Apr 26 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.35.1-3
+- Adpated to SailfishOS and AuroraOS
