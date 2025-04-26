@@ -128,13 +128,32 @@ cp %{SOURCE3} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/172x172/apps/org.meecast
 cp %{SOURCE4} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps/org.meecast.mpv.png
 cp %{SOURCE5} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps/org.meecast.mpv.png
 cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/org.meecast.mpv.png
-#For Aurora5 build
+##For Aurora5 arm build
+#mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
+##mv $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
+##mv $RPM_BUILD_ROOT/%{_libdir}64/pkgconfig/%{origname}.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
+##sed -i 's/lib64/lib/g' $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+#sed -i "s/-lmpv/\/usr\/lib\/libmpv.a \/usr\/lib\/libavfilter.a \/usr\/lib\/libavformat.a \/usr\/lib\/libavcodec.a \/usr\/lib\/libswscale.a \/usr\/lib\/libswresample.a \/usr\/lib\/libavdevice.a \/usr\/lib\/libavutil.a \/usr\/lib\/liblua.a \/usr\/lib\/libvpx.a \/usr\/lib\/libwebpmux.a \/usr\/lib\/libwebp.a \/usr\/lib\/libwebpdecoder.a \/usr\/lib\/libtheora.a \/usr\/lib\/libspeex.a \/usr\/lib\/libopenjp2.a \/usr\/lib\/libvorbis.a \/usr\/lib\/libvorbisenc.a \/usr\/lib\/libopus.a \/usr\/lib\/libogg.a \/usr\/lib\/libxkbcommon.a \/usr\/lib\/libdrm.a \/usr\/lib\/libass.a \/usr\/lib\/libfontconfig.a \/usr\/lib\/libfreetype.a \/usr\/lib\/libgraphite2.a \/usr\/lib\/libfribidi.a \/usr\/lib\/libharfbuzz.a \/usr\/lib\/libexpat.a \/usr\/lib\/libpng.a \/usr\/lib\/libz.a -pthread -lssl -lcrypto -lbz2/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+#sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse >=  1.0, wayland-cursor >=  1.15.0, wayland-protocols >=  1.15, egl >  1.4.0, wayland-egl >=  9.0.0/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+
+##For Aurora5 aarch64 build
+#mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
+##mv $RPM_BUILD_ROOT/usr/lib/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
+#mv $RPM_BUILD_ROOT/usr/lib/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
+#mv $RPM_BUILD_ROOT/usr/lib/pkgconfig/%{origname}.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
+#sed -i 's/\/usr\/lib/\/usr\/lib64/g' $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+#sed -i "s/-lmpv/\/usr\/lib64\/libmpv.a \/usr\/lib64\/libavfilter.a \/usr\/lib64\/libavformat.a \/usr\/lib64\/libavcodec.a \/usr\/lib64\/libswscale.a \/usr\/lib64\/libswresample.a \/usr\/lib64\/libavdevice.a \/usr\/lib64\/libavutil.a \/usr\/lib64\/liblua.a \/usr\/lib64\/libvpx.a \/usr\/lib64\/libwebpmux.a \/usr\/lib64\/libwebp.a \/usr\/lib64\/libwebpdecoder.a \/usr\/lib64\/libtheora.a \/usr\/lib64\/libspeex.a \/usr\/lib64\/libopenjp2.a \/usr\/lib64\/libvorbis.a \/usr\/lib64\/libvorbisenc.a \/usr\/lib64\/libopus.a \/usr\/lib64\/libogg.a \/usr\/lib64\/libxkbcommon.a \/usr\/lib64\/libdrm.a \/usr\/lib64\/libass.a \/usr\/lib64\/libfontconfig.a \/usr\/lib64\/libfreetype.a  \/usr\/lib64\/libfribidi.a \/usr\/lib64\/libharfbuzz.a \/usr\/lib64\/libgraphite2.a \/usr\/lib64\/libexpat.a \/usr\/lib64\/libpng.a \/usr\/lib64\/libz.a -pthread -lssl -lcrypto -lbz2/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+#sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse >=  1.0, wayland-cursor >=  1.15.0, wayland-protocols >=  1.15, egl >  1.4.0, wayland-egl >=  9.0.0/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+#
+#For Sailfishos aarch64 build
 mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
-#mv $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
-#mv $RPM_BUILD_ROOT/%{_libdir}64/pkgconfig/%{origname}.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
-#sed -i 's/lib64/lib/g' $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
-sed -i "s/-lmpv/\/usr\/lib\/libmpv.a \/usr\/lib\/libavfilter.a \/usr\/lib\/libavformat.a \/usr\/lib\/libavcodec.a \/usr\/lib\/libswscale.a \/usr\/lib\/libswresample.a \/usr\/lib\/libavdevice.a \/usr\/lib\/libavutil.a \/usr\/lib\/liblua.a \/usr\/lib\/libvpx.a \/usr\/lib\/libwebpmux.a \/usr\/lib\/libwebp.a \/usr\/lib\/libwebpdecoder.a \/usr\/lib\/libtheora.a \/usr\/lib\/libspeex.a \/usr\/lib\/libopenjp2.a \/usr\/lib\/libvorbis.a \/usr\/lib\/libvorbisenc.a \/usr\/lib\/libopus.a \/usr\/lib\/libogg.a \/usr\/lib\/libxkbcommon.a \/usr\/lib\/libdrm.a \/usr\/lib\/libass.a \/usr\/lib\/libfontconfig.a \/usr\/lib\/libfreetype.a \/usr\/lib\/libharfbuzz.a \/usr\/lib\/libgraphite2.a \/usr\/lib\/libfribidi.a \/usr\/lib\/libexpat.a \/usr\/lib\/libpng.a \/usr\/lib\/libz.a -pthread -lssl -lcrypto -lbz2/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+#mv $RPM_BUILD_ROOT/usr/lib/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
+#mv $RPM_BUILD_ROOT/usr/lib/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
+#mv $RPM_BUILD_ROOT/usr/lib/pkgconfig/%{origname}.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
+sed -i 's/\/usr\/lib/\/usr\/lib64/g' $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+sed -i "s/-lmpv/\/usr\/lib64\/libmpv.a \/usr\/lib64\/libavfilter.a \/usr\/lib64\/libavformat.a \/usr\/lib64\/libavcodec.a \/usr\/lib64\/libswscale.a \/usr\/lib64\/libswresample.a \/usr\/lib64\/libavdevice.a \/usr\/lib64\/libavutil.a \/usr\/lib64\/liblua.a \/usr\/lib64\/libvpx.a \/usr\/lib64\/libwebpmux.a \/usr\/lib64\/libwebp.a \/usr\/lib64\/libwebpdecoder.a \/usr\/lib64\/libtheora.a \/usr\/lib64\/libspeex.a \/usr\/lib64\/libopenjp2.a \/usr\/lib64\/libvorbis.a \/usr\/lib64\/libvorbisenc.a \/usr\/lib64\/libopus.a \/usr\/lib64\/libogg.a \/usr\/lib64\/libxkbcommon.a \/usr\/lib64\/libdrm.a \/usr\/lib64\/libass.a \/usr\/lib64\/libfontconfig.a \/usr\/lib64\/libfreetype.a  \/usr\/lib64\/libfribidi.a \/usr\/lib64\/libharfbuzz.a \/usr\/lib64\/libgraphite2.a \/usr\/lib64\/libexpat.a \/usr\/lib64\/libpng.a \/usr\/lib64\/libz.a -pthread -lssl -lcrypto -lbz2/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
 sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse >=  1.0, wayland-cursor >=  1.15.0, wayland-protocols >=  1.15, egl >  1.4.0, wayland-egl >=  9.0.0/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+
 
 %files
 #%docdir %{_docdir}/%{origname}/
