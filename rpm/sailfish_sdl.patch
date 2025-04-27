@@ -1,12 +1,13 @@
 diff --git a/player/command.c b/player/command.c
-index 2e6b9875d7..e836ff37f9 100644
+index 2e6b9875d7..d686185a60 100644
 --- a/player/command.c
 +++ b/player/command.c
-@@ -2627,12 +2627,22 @@ static int mp_property_osd_dim(void *ctx, struct m_property *prop,
+@@ -2627,12 +2627,26 @@ static int mp_property_osd_dim(void *ctx, struct m_property *prop,
      if (!mpctx->video_out || !mpctx->video_out->config_ok)
          vo_res = (struct mp_osd_res){0};
  
 -    double aspect = 1.0 * vo_res.w / MPMAX(vo_res.h, 1) /
++//    double aspect = 1.0 * vo_res.w / MPMAX(vo_res.h, 1) /
 +    /* Hack for Sailfishos and AuroraOS mobile devices */
 +    int w, h;
 +    if (vo_res.w < vo_res.h){
@@ -25,11 +26,14 @@ index 2e6b9875d7..e836ff37f9 100644
 -        {"h",       SUB_PROP_INT(vo_res.h)},
 +        {"w",       SUB_PROP_INT(w)},
 +        {"h",       SUB_PROP_INT(h)},
++//        {"w",       SUB_PROP_INT(vo_res.w)},
++//        {"h",       SUB_PROP_INT(vo_res.h)},
++
          {"par",     SUB_PROP_DOUBLE(vo_res.display_par)},
          {"aspect",  SUB_PROP_DOUBLE(aspect)},
          {"mt",      SUB_PROP_INT(vo_res.mt)},
 diff --git a/player/lua/osc.lua b/player/lua/osc.lua
-index a244280a35..218356e152 100644
+index a244280a35..fbbeba1605 100644
 --- a/player/lua/osc.lua
 +++ b/player/lua/osc.lua
 @@ -21,7 +21,7 @@ local user_opts = {
@@ -41,22 +45,62 @@ index a244280a35..218356e152 100644
                                  -- mouse movement. enforced non-negative for the
                                  -- user, but internally negative is "always-on".
      fadeduration = 200,         -- duration of fade out in ms, 0 = no fade
-@@ -2595,7 +2595,8 @@ function tick()
-         local display_h = 360
-         local display_w = display_h * display_aspect
+@@ -2591,35 +2591,37 @@ function tick()
+ 
+         -- render idle message
+         msg.trace("idle message")
+-        local _, _, display_aspect = mp.get_osd_size()
+-        local display_h = 360
+-        local display_w = display_h * display_aspect
++        local display_w, display_h, display_aspect = mp.get_osd_size()
++        -- local display_h = 360
++        -- local display_w = display_h * display_aspect
          -- logo is rendered at 2^(6-1) = 32 times resolution with size 1800x1800
 -        local icon_x, icon_y = (display_w - 1800 / 32) / 2, 140
 +        -- local icon_x, icon_y = (display_w - 1800 / 32) / 2, 140
-+        local icon_x, icon_y = (display_w - 1800 / 32) / 2, 40
++        -- local icon_x, icon_y = (display_w - 1800 / 32) / 2, 40
++        local icon_x, icon_y = 0,0
          local line_prefix = ("{\\rDefault\\an7\\1a&H00&\\bord0\\shad0\\pos(%f,%f)}"):format(icon_x, icon_y)
  
          local ass = assdraw.ass_new()
-@@ -2619,7 +2620,7 @@ function tick()
+         -- mpv logo
+-        if user_opts.idlescreen then
+-            for i, line in ipairs(logo_lines) do
+-                ass:new_event()
+-                ass:append(line_prefix .. line)
+-            end
+-        end
+-
+-        -- Santa hat
+-        if is_december and user_opts.idlescreen and not user_opts.greenandgrumpy then
+-            for i, line in ipairs(santa_hat_lines) do
+-                ass:new_event()
+-                ass:append(line_prefix .. line)
+-            end
+-        end
++        -- if user_opts.idlescreen then
++        --     for i, line in ipairs(logo_lines) do
++        --         ass:new_event()
++        --         ass:append(line_prefix .. line)
++        --     end
++        -- end
++
++        ---- Santa hat
++        --if is_december and user_opts.idlescreen and not user_opts.greenandgrumpy then
++        --    for i, line in ipairs(santa_hat_lines) do
++        --        ass:new_event()
++        --        ass:append(line_prefix .. line)
++        --    end
++        --end
+ 
+         if user_opts.idlescreen then
              ass:new_event()
-             ass:pos(display_w / 2, icon_y + 65)
-             ass:an(8)
+-            ass:pos(display_w / 2, icon_y + 65)
+-            ass:an(8)
 -            ass:append("Drop files or URLs to play here.")
-+            ass:append("Use the command in terminal: {\\fscy50\\fscx50} org.meecast.mpv [url|path/]filename {\\fscy100\\fscx100} to play the video.")
++            ass:pos(0, 0)
++            ass:an(7)
++            ass:append("{\\fscy50\\fscx50}Use the command in terminal: \\N {\\fscy25\\fscx25} org.meecast.mpvsdl [url|path/]filename \\N{\\fscy50\\fscx50} to play the video.")
          end
          set_osd(display_w, display_h, ass.text)
  
