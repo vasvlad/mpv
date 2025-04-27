@@ -1,5 +1,5 @@
 %define origname mpv
-Name:           org.meecast.mpvsdl
+Name:           harbour-mpvsdl
 Version:        0.35.1
 Release:        3
 
@@ -8,7 +8,7 @@ Summary:        Movie player playing most video formats and DVDs
 URL:            https://%{origname}.io/
 Source0:        %{origname}-%{version}.tar.bz2
 Source1:        input-event-codes.h
-Source2:        org.meecast.mpvsdl.desktop
+Source2:        harbour-mpvsdl.desktop
 Source3:        mpv172.png
 Source4:        mpv128.png
 Source5:        mpv108.png
@@ -115,7 +115,7 @@ rm -rf $RPM_BUILD_ROOT/%{_sysconfdir}/%{origname}/
 #rm -rf $RPM_BUILD_ROOT/%license
 mv $RPM_BUILD_ROOT/%{_bindir}/%{origname} $RPM_BUILD_ROOT/%{_bindir}/%{name}
 #rm -rf $RPM_BUILD_ROOT/%{_bindir}/%{origname}
-#cp /home/vlad/mpv /home/vlad/work/mpv/rpm/BUILDROOT/org.meecast.mpv-0.35.1-0.arm/usr/bin/org.meecast.mpv
+#cp /home/vlad/mpv /home/vlad/work/mpv/rpm/BUILDROOT/harbour-mpv-0.35.1-0.arm/usr/bin/harbour-mpv
 rm -rf $RPM_BUILD_ROOT/%{_datadir}/applications/%{origname}.desktop
 rm -rf $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/*/apps/%{origname}*.png
 rm -rf $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/*/apps/%{origname}*.svg
@@ -124,10 +124,10 @@ mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/172x172/apps
-cp %{SOURCE3} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/172x172/apps/org.meecast.mpvsdl.png
-cp %{SOURCE4} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps/org.meecast.mpvsdl.png
-cp %{SOURCE5} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps/org.meecast.mpvsdl.png
-cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/org.meecast.mpvsdl.png
+cp %{SOURCE3} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/172x172/apps/harbour-mpvsdl.png
+cp %{SOURCE4} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/128x128/apps/harbour-mpvsdl.png
+cp %{SOURCE5} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/108x108/apps/harbour-mpvsdl.png
+cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/harbour-mpvsdl.png
 ##For Aurora5 arm build
 #mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
 ##mv $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
