@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
 X-Nemo-Application-Type=silica-qt5
-Icon=org.meecast.mpvsdl
-Exec=org.meecast.mpvsdl
+Icon=harbour-mpvsdl
+Exec=harbour-mpvsdl
 Name=mpv-sdl
 Name[en]=mpv-sdl
 
