@@ -100,7 +100,7 @@ index a244280a35..fbbeba1605 100644
 -            ass:append("Drop files or URLs to play here.")
 +            ass:pos(0, 0)
 +            ass:an(7)
-+            ass:append("{\\fscy50\\fscx50}Use the command in terminal: \\N {\\fscy25\\fscx25} org.meecast.mpvsdl [url|path/]filename \\N{\\fscy50\\fscx50} to play the video.")
++            ass:append("{\\fscy50\\fscx50}Use the command in terminal: \\N {\\fscy25\\fscx25} harbour-mpvsdl [url|path/]filename \\N{\\fscy50\\fscx50} to play the video.")
          end
          set_osd(display_w, display_h, ass.text)
  

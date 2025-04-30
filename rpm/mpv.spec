@@ -1,3 +1,4 @@
+%define __requires_exclude ^libwayland-egl.*$
 %define origname mpv
 Name:           harbour-mpvsdl
 Version:        0.35.1
