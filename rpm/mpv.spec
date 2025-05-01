@@ -1,7 +1,8 @@
+%define __requires_exclude ^libwayland-egl.*$
 %define origname mpv
 Name:           harbour-mpvsdl
-Version:        0.35.1
-Release:        3
+Version:        0.36
+Release:        1
 
 License:        GPL-2.0-or-later AND LGPL-2.1-or-later
 Summary:        Movie player playing most video formats and DVDs
