@@ -1,7 +1,7 @@
 %define origname mpv
 Name:           org.meecast.mpvsdl
-Version:        0.35.1
-Release:        3
+Version:        0.37
+Release:        1
 
 License:        GPL-2.0-or-later AND LGPL-2.1-or-later
 Summary:        Movie player playing most video formats and DVDs
@@ -14,8 +14,8 @@ Source4:        mpv128.png
 Source5:        mpv108.png
 Source6:        mpv86.png
 
-Patch0:         0001-dont-check-input-event-codes-h.patch
-Patch1:         sailfish_sdl.patch
+#Patch0:         0001-dont-check-input-event-codes-h.patch
+Patch0:         sailfish_sdl.patch
 
 BuildRequires:  desktop-file-utils
 BuildRequires:  gcc
@@ -97,6 +97,7 @@ mkdir -p build
 install -p -m644 -D %{SOURCE1} build/linux/input-event-codes.h
 
 %build
+#export LDFLAGS="$RPM_OPT_FLAGS -lstdc++"
 pushd build
 meson -Dlua=enabled -Dsdl2=enabled -Dgl=enabled -Dwayland=enabled -Ddefault_library=static -Dlibmpv=true --prefix=/usr --prefer-static ../
 ninja
@@ -133,7 +134,7 @@ mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
 mv $RPM_BUILD_ROOT/%{_libdir}64/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
 mv $RPM_BUILD_ROOT/%{_libdir}64/pkgconfig/%{origname}.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
 sed -i 's/lib64/lib/g' $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
-sed -i "s/-lmpv/\/usr\/lib\/libmpv.a \/usr\/lib\/libavfilter.a \/usr\/lib\/libavformat.a \/usr\/lib\/libavcodec.a \/usr\/lib\/libswscale.a \/usr\/lib\/libswresample.a \/usr\/lib\/libavdevice.a \/usr\/lib\/libavutil.a \/usr\/lib\/liblua.a \/usr\/lib\/libvpx.a \/usr\/lib\/libwebpmux.a \/usr\/lib\/libwebp.a \/usr\/lib\/libwebpdecoder.a \/usr\/lib\/libtheora.a \/usr\/lib\/libspeex.a \/usr\/lib\/libopenjp2.a \/usr\/lib\/libvorbis.a \/usr\/lib\/libvorbisenc.a \/usr\/lib\/libopus.a \/usr\/lib\/libogg.a \/usr\/lib\/libxkbcommon.a \/usr\/lib\/libdrm.a \/usr\/lib\/libass.a \/usr\/lib\/libfontconfig.a \/usr\/lib\/libfreetype.a \/usr\/lib\/libfribidi.a \/usr\/lib\/libharfbuzz.a \/usr\/lib\/libgraphite2.a \/usr\/lib\/libexpat.a \/usr\/lib\/libpng.a \/usr\/lib\/libz.a -pthread -lssl -lcrypto -lbz2/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+sed -i "s/-lmpv/\/usr\/lib\/libmpv.a \/usr\/lib\/libavfilter.a \/usr\/lib\/libavformat.a \/usr\/lib\/libavcodec.a \/usr\/lib\/libswscale.a \/usr\/lib\/libswresample.a \/usr\/lib\/libavdevice.a \/usr\/lib\/libavutil.a \/usr\/lib\/liblua.a \/usr\/lib\/libvpx.a \/usr\/lib\/libwebpmux.a \/usr\/lib\/libwebp.a \/usr\/lib\/libwebpdecoder.a \/usr\/lib\/libtheora.a \/usr\/lib\/libspeex.a \/usr\/lib\/libopenjp2.a \/usr\/lib\/libvorbis.a \/usr\/lib\/libvorbisenc.a \/usr\/lib\/libopus.a \/usr\/lib\/libogg.a \/usr\/lib\/libxkbcommon.a \/usr\/lib\/libdrm.a \/usr\/lib\/libass.a \/usr\/lib\/libfontconfig.a \/usr\/lib\/libfreetype.a \/usr\/lib\/libgraphite2.a \/usr\/lib\/libfribidi.a \/usr\/lib\/libharfbuzz.a \/usr\/lib\/libexpat.a \/usr\/lib\/libpng.a \/usr\/lib\/libz.a -pthread -lssl -lcrypto -lbz2/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
 sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse >=  1.0, wayland-cursor >=  1.15.0, wayland-protocols >=  1.15, egl >  1.4.0, wayland-egl >=  9.0.0/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
 
 ##For Aurora5 aarch64 build
@@ -153,7 +154,7 @@ sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse
 #sed -i 's/\/usr\/lib/\/usr\/lib64/g' $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
 #sed -i "s/-lmpv/\/usr\/lib64\/libmpv.a \/usr\/lib64\/libavfilter.a \/usr\/lib64\/libavformat.a \/usr\/lib64\/libavcodec.a \/usr\/lib64\/libswscale.a \/usr\/lib64\/libswresample.a \/usr\/lib64\/libavdevice.a \/usr\/lib64\/libavutil.a \/usr\/lib64\/liblua.a \/usr\/lib64\/libvpx.a \/usr\/lib64\/libwebpmux.a \/usr\/lib64\/libwebp.a \/usr\/lib64\/libwebpdecoder.a \/usr\/lib64\/libtheora.a \/usr\/lib64\/libspeex.a \/usr\/lib64\/libopenjp2.a \/usr\/lib64\/libvorbis.a \/usr\/lib64\/libvorbisenc.a \/usr\/lib64\/libopus.a \/usr\/lib64\/libogg.a \/usr\/lib64\/libxkbcommon.a \/usr\/lib64\/libdrm.a \/usr\/lib64\/libass.a \/usr\/lib64\/libfontconfig.a \/usr\/lib64\/libfreetype.a  \/usr\/lib64\/libfribidi.a \/usr\/lib64\/libharfbuzz.a \/usr\/lib64\/libgraphite2.a \/usr\/lib64\/libexpat.a \/usr\/lib64\/libpng.a \/usr\/lib64\/libz.a -pthread -lssl -lcrypto -lbz2/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
 #sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse >=  1.0, wayland-cursor >=  1.15.0, wayland-protocols >=  1.15, egl >  1.4.0, wayland-egl >=  9.0.0/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
-#
+
 
 %files
 #%docdir %{_docdir}/%{origname}/
