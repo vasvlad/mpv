@@ -1,6 +1,6 @@
 %define origname mpv
 Name:           org.meecast.mpvsdl
-Version:        0.36
+Version:        0.37
 Release:        3
 
 License:        GPL-2.0-or-later AND LGPL-2.1-or-later
@@ -14,8 +14,8 @@ Source4:        mpv128.png
 Source5:        mpv108.png
 Source6:        mpv86.png
 
-Patch0:         0001-dont-check-input-event-codes-h.patch
-Patch1:         sailfish_sdl.patch
+#Patch0:         0001-dont-check-input-event-codes-h.patch
+Patch0:         sailfish_sdl.patch
 
 BuildRequires:  desktop-file-utils
 BuildRequires:  gcc
@@ -98,7 +98,7 @@ install -p -m644 -D %{SOURCE1} build/linux/input-event-codes.h
 
 %build
 pushd build
-meson -Dlua=enabled -Dsdl2=enabled -Dgl=enabled -Dwayland=enabled -Ddefault_library=static -Dlibmpv=true --prefix=/usr --prefer-static ../
+meson -Dlua=enabled -Dsdl2=enabled -Dgl=enabled -Dwayland=disabled -Ddefault_library=static -Dlibmpv=true --prefix=/usr --prefer-static ../
 ninja
 popd
 
