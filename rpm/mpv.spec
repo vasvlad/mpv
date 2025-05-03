@@ -1,7 +1,7 @@
 %define origname mpv
 Name:           org.meecast.mpvsdl
 Version:        0.37
-Release:        3
+Release:        1
 
 License:        GPL-2.0-or-later AND LGPL-2.1-or-later
 Summary:        Movie player playing most video formats and DVDs
