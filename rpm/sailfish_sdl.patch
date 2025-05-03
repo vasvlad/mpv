@@ -1,8 +1,40 @@
+diff --git a/meson.build b/meson.build
+index fdfc526525..fac958e5f3 100644
+--- a/meson.build
++++ b/meson.build
+@@ -973,9 +973,6 @@ wayland = {
+              dependency('wayland-cursor', version: '>= 1.20.0', required: get_option('wayland')),
+              dependency('wayland-protocols', version: '>= 1.25', required: get_option('wayland')),
+              dependency('xkbcommon', version: '>= 0.3.0', required: get_option('wayland'))],
+-    'header': cc.has_header('linux/input-event-codes.h', required: get_option('wayland'),
+-                            # Pass CFLAGS from a related package as a hint for non-Linux
+-                            dependencies: dependency('wayland-client', required: get_option('wayland'))),
+     'scanner': find_program('wayland-scanner', required: get_option('wayland')),
+ }
+ wayland_deps = true
+@@ -985,7 +982,7 @@ foreach dep: wayland['deps']
+         break
+     endif
+ endforeach
+-features += {'wayland': wayland_deps and wayland['header'] and wayland['scanner'].found()}
++features += {'wayland': wayland_deps and wayland['scanner'].found()}
+ 
+ if features['wayland']
+     subdir(join_paths('video', 'out'))
+@@ -1049,7 +1046,7 @@ if features['xv']
+     sources += files('video/out/vo_xv.c')
+ endif
+ 
+-if features['wayland'] or features['x11']
++if features['wayland'] or features['x11'] or features['drm']
+     sources += ('video/out/present_sync.c')
+ endif
+ 
 diff --git a/player/command.c b/player/command.c
-index 2e6b9875d7..d686185a60 100644
+index 8bff0cd6f9..a8845a0252 100644
 --- a/player/command.c
 +++ b/player/command.c
-@@ -2627,12 +2627,26 @@ static int mp_property_osd_dim(void *ctx, struct m_property *prop,
+@@ -2752,12 +2752,26 @@ static int mp_property_osd_dim(void *ctx, struct m_property *prop,
      if (!mpctx->video_out || !mpctx->video_out->config_ok)
          vo_res = (struct mp_osd_res){0};
  
@@ -33,7 +65,7 @@ index 2e6b9875d7..d686185a60 100644
          {"aspect",  SUB_PROP_DOUBLE(aspect)},
          {"mt",      SUB_PROP_INT(vo_res.mt)},
 diff --git a/player/lua/osc.lua b/player/lua/osc.lua
-index a244280a35..fbbeba1605 100644
+index 45a5d90f78..f503545ee1 100644
 --- a/player/lua/osc.lua
 +++ b/player/lua/osc.lua
 @@ -21,7 +21,7 @@ local user_opts = {
@@ -45,25 +77,24 @@ index a244280a35..fbbeba1605 100644
                                  -- mouse movement. enforced non-negative for the
                                  -- user, but internally negative is "always-on".
      fadeduration = 200,         -- duration of fade out in ms, 0 = no fade
-@@ -2591,35 +2591,37 @@ function tick()
+@@ -2602,38 +2602,20 @@ function tick()
  
          -- render idle message
          msg.trace("idle message")
 -        local _, _, display_aspect = mp.get_osd_size()
++        local display_w, display_h, display_aspect = mp.get_osd_size()
+         if display_aspect == 0 then
+             return
+         end
 -        local display_h = 360
 -        local display_w = display_h * display_aspect
-+        local display_w, display_h, display_aspect = mp.get_osd_size()
-+        -- local display_h = 360
-+        -- local display_w = display_h * display_aspect
          -- logo is rendered at 2^(6-1) = 32 times resolution with size 1800x1800
 -        local icon_x, icon_y = (display_w - 1800 / 32) / 2, 140
-+        -- local icon_x, icon_y = (display_w - 1800 / 32) / 2, 140
-+        -- local icon_x, icon_y = (display_w - 1800 / 32) / 2, 40
 +        local icon_x, icon_y = 0,0
          local line_prefix = ("{\\rDefault\\an7\\1a&H00&\\bord0\\shad0\\pos(%f,%f)}"):format(icon_x, icon_y)
  
          local ass = assdraw.ass_new()
-         -- mpv logo
+-        -- mpv logo
 -        if user_opts.idlescreen then
 -            for i, line in ipairs(logo_lines) do
 -                ass:new_event()
@@ -78,21 +109,7 @@ index a244280a35..fbbeba1605 100644
 -                ass:append(line_prefix .. line)
 -            end
 -        end
-+        -- if user_opts.idlescreen then
-+        --     for i, line in ipairs(logo_lines) do
-+        --         ass:new_event()
-+        --         ass:append(line_prefix .. line)
-+        --     end
-+        -- end
-+
-+        ---- Santa hat
-+        --if is_december and user_opts.idlescreen and not user_opts.greenandgrumpy then
-+        --    for i, line in ipairs(santa_hat_lines) do
-+        --        ass:new_event()
-+        --        ass:append(line_prefix .. line)
-+        --    end
-+        --end
- 
+-
          if user_opts.idlescreen then
              ass:new_event()
 -            ass:pos(display_w / 2, icon_y + 65)
@@ -100,31 +117,24 @@ index a244280a35..fbbeba1605 100644
 -            ass:append("Drop files or URLs to play here.")
 +            ass:pos(0, 0)
 +            ass:an(7)
-+            ass:append("{\\fscy50\\fscx50}Use the command in terminal: \\N {\\fscy25\\fscx25} org.meecast.mpvsdl [url|path/]filename \\N{\\fscy50\\fscx50} to play the video.")
++            ass:append("{\\fscy50\\fscx50}Use the command in terminal: \\N {\\fscy25\\fscx25} harbour-mpvsdl [url|path/]filename \\N{\\fscy50\\fscx50} to play the video.")
          end
-         set_osd(display_w, display_h, ass.text)
+         set_osd(display_w, display_h, ass.text, -1000)
  
 diff --git a/player/main.c b/player/main.c
-index 1c1cdf9f29..32155320cb 100644
+index 27cf9b4449..2a937bcf0a 100644
 --- a/player/main.c
 +++ b/player/main.c
-@@ -347,11 +347,12 @@ int mp_initialize(struct MPContext *mpctx, char **options)
+@@ -351,6 +351,7 @@ int mp_initialize(struct MPContext *mpctx, char **options)
              return r == M_OPT_EXIT ? 1 : -1;
      }
  
--    if (opts->operation_mode == 1) {
 +    // set --player-operation-mode=pseudo-gui by default Hack For SailfisOS and AuroraOS mobiledevice
-+    //if (opts->operation_mode == 1) {
+     if (opts->operation_mode == 1) {
          m_config_set_profile(mpctx->mconfig, "builtin-pseudo-gui",
                               M_SETOPT_NO_OVERWRITE);
-         m_config_set_profile(mpctx->mconfig, "pseudo-gui", 0);
--    }
-+    //}
- 
-     // Backup the default settings, which should not be stored in the resume
-     // config files. This explicitly includes values set by config files and
 diff --git a/video/out/vo_sdl.c b/video/out/vo_sdl.c
-index adfcfb43d8..92af124b2d 100644
+index 5f4c027ed5..88463ea935 100644
 --- a/video/out/vo_sdl.c
 +++ b/video/out/vo_sdl.c
 @@ -29,6 +29,7 @@
@@ -135,7 +145,7 @@ index adfcfb43d8..92af124b2d 100644
  
  #include "input/input.h"
  #include "input/keycodes.h"
-@@ -191,6 +192,8 @@ struct priv {
+@@ -190,6 +191,8 @@ struct priv {
      Uint32 wakeup_event;
      bool screensaver_enabled;
      struct m_config_cache *opts_cache;
@@ -143,11 +153,12 @@ index adfcfb43d8..92af124b2d 100644
 +    float screenCoef;
  
      // options
-     int allow_sw;
-@@ -365,6 +368,15 @@ static void resize(struct vo *vo, int w, int h)
+     bool allow_sw;
+@@ -364,6 +367,16 @@ static void resize(struct vo *vo, int w, int h)
      vo->dheight = h;
      vo_get_src_dst_rects(vo, &vc->src_rect, &vc->dst_rect,
                           &vc->osd_res);
++#if 0
 +    /* Change size for OSD */
 +    if (vc->display_orientation == SDL_ORIENTATION_LANDSCAPE ||
 +        vc->display_orientation == SDL_ORIENTATION_LANDSCAPE_FLIPPED){
@@ -155,12 +166,12 @@ index adfcfb43d8..92af124b2d 100644
 +        vc->osd_res.h = vc->osd_res.w;
 +        vc->osd_res.w = temp;
 +    }
++#endif
 +    vc->screenCoef = (float)vo->dheight/(float)(vo->dwidth);
-+
      SDL_RenderSetLogicalSize(vc->renderer, w, h);
      vo->want_redraw = true;
      vo_wakeup(vo);
-@@ -402,7 +414,8 @@ static void set_fullscreen(struct vo *vo)
+@@ -401,7 +414,8 @@ static void set_fullscreen(struct vo *vo)
  {
      struct priv *vc = vo->priv;
      struct mp_vo_opts *opts = vc->opts_cache->opts;
@@ -170,7 +181,7 @@ index adfcfb43d8..92af124b2d 100644
      SDL_bool prev_screensaver_state = SDL_IsScreenSaverEnabled();
  
      Uint32 fs_flag;
-@@ -441,6 +454,8 @@ static void update_screeninfo(struct vo *vo, struct mp_rect *screenrc)
+@@ -440,6 +454,8 @@ static void update_screeninfo(struct vo *vo, struct mp_rect *screenrc)
          return;
      }
      *screenrc = (struct mp_rect){0, 0, mode.w, mode.h};
@@ -179,7 +190,7 @@ index adfcfb43d8..92af124b2d 100644
  }
  
  static int reconfig(struct vo *vo, struct mp_image_params *params)
-@@ -521,11 +536,37 @@ static void wakeup(struct vo *vo)
+@@ -520,8 +536,34 @@ static void wakeup(struct vo *vo)
      SDL_PushEvent(&event);
  }
  
@@ -208,16 +219,13 @@ index adfcfb43d8..92af124b2d 100644
 +    }
 +}
 +
- static void wait_events(struct vo *vo, int64_t until_time_us)
+ static void wait_events(struct vo *vo, int64_t until_time_ns)
  {
-     int64_t wait_us = until_time_us - mp_time_us();
-     int timeout_ms = MPCLAMP((wait_us + 500) / 1000, 0, 10000);
-     SDL_Event ev;
 +    struct priv *vc = vo->priv;
- 
-     while (SDL_WaitEventTimeout(&ev, timeout_ms)) {
-         timeout_ms = 0;
-@@ -550,6 +591,37 @@ static void wait_events(struct vo *vo, int64_t until_time_us)
+     int64_t wait_ns = until_time_ns - mp_time_ns();
+     // Round-up to 1ms for short timeouts (100us, 1000us]
+     if (wait_ns > MP_TIME_US_TO_NS(100))
+@@ -552,6 +594,37 @@ static void wait_events(struct vo *vo, int64_t until_time_ns)
          case SDL_QUIT:
              mp_input_put_key(vo->input_ctx, MP_KEY_CLOSE_WIN);
              break;
@@ -255,7 +263,7 @@ index adfcfb43d8..92af124b2d 100644
          case SDL_TEXTINPUT: {
              int sdl_mod = SDL_GetModState();
              int mpv_mod = 0;
-@@ -599,6 +671,7 @@ static void wait_events(struct vo *vo, int64_t until_time_us)
+@@ -601,6 +674,7 @@ static void wait_events(struct vo *vo, int64_t until_time_ns)
              break;
          }
          case SDL_MOUSEMOTION:
@@ -263,19 +271,15 @@ index adfcfb43d8..92af124b2d 100644
              mp_input_set_mouse_pos(vo->input_ctx, ev.motion.x, ev.motion.y);
              break;
          case SDL_MOUSEBUTTONDOWN: {
-@@ -779,12 +852,53 @@ static void draw_osd_part(struct vo *vo, int index)
+@@ -779,6 +853,70 @@ static void draw_osd_part(struct vo *vo, int index)
+     struct osd_bitmap_surface *sfc = &vc->osd_surfaces[index];
+     int i;
  
-     for (i = 0; i < sfc->num_targets; i++) {
-         struct osd_target *target = sfc->targets + i;
--        if (target->tex)
--            SDL_RenderCopy(vc->renderer, target->tex,
--                           &target->source, &target->dest);
--        if (target->tex2)
--            SDL_RenderCopy(vc->renderer, target->tex2,
--                           &target->source, &target->dest);
++    for (i = 0; i < sfc->num_targets; i++) {
++        struct osd_target *target = sfc->targets + i;
 +        SDL_Rect dstrect;
 +        int H = (int)(target->dest.h*vc->screenCoef);
-+        int W = vo->dheight;
++        int W = (int)(target->dest.w*vc->screenCoef);
 +        dstrect.w = W;
 +        dstrect.h = H;
 +        dstrect.x = ((H - W) / 2 - 1);
@@ -284,21 +288,25 @@ index adfcfb43d8..92af124b2d 100644
 +        if (vc->display_orientation == SDL_ORIENTATION_LANDSCAPE ||
 +            vc->display_orientation == SDL_ORIENTATION_LANDSCAPE_FLIPPED){
 +            if (vc->display_orientation == SDL_ORIENTATION_LANDSCAPE){
-+                dstrect.x = vo->dwidth - dstrect.y - dstrect.h;
-+                if (target->tex)
++                dstrect.x = (H - W) / 2 + vo->dwidth - dstrect.h; 
++                if (target->tex){
 +                    SDL_RenderCopyEx(vc->renderer, target->tex, NULL, &dstrect, 270.0, NULL, SDL_FLIP_NONE);
-+                if (target->tex2)
++                }
++                if (target->tex2){
 +                    SDL_RenderCopyEx(vc->renderer, target->tex2, NULL, &dstrect, 270.0, NULL, SDL_FLIP_NONE);
++                }
 +            }else{
-+                if (target->tex)
++                if (target->tex){
 +                    SDL_RenderCopyEx(vc->renderer, target->tex, NULL, &dstrect, 90.0, NULL, SDL_FLIP_NONE);
-+                if (target->tex2)
++                }
++                if (target->tex2){
 +                    SDL_RenderCopyEx(vc->renderer, target->tex2, NULL, &dstrect, 90.0, NULL, SDL_FLIP_NONE);
++                }
 +            }
 +        }else{
 +            if (vc->display_orientation == SDL_ORIENTATION_PORTRAIT){
 +                target->dest.y = vo->dheight - target->dest.h;
-+                target->dest.w = vo->dwidth;
++                //target->dest.w = vo->dwidth;
 +                if (target->tex){
 +                    SDL_RenderCopy(vc->renderer, target->tex,
 +                                   &target->source, &target->dest);
@@ -308,7 +316,7 @@ index adfcfb43d8..92af124b2d 100644
 +                                   &target->source, &target->dest);
 +                }
 +            }else{
-+                target->dest.w = vo->dwidth;
++                //target->dest.w = vo->dwidth;
 +                target->dest.y = 0;
 +                if (target->tex){
 +                    SDL_RenderCopyEx(vc->renderer, target->tex,
@@ -320,10 +328,29 @@ index adfcfb43d8..92af124b2d 100644
 +                }
 +            }
 +        }
++    }
++}
++
++/*
++static void draw_osd_part(struct vo *vo, int index)
++{
++    struct priv *vc = vo->priv;
++    struct osd_bitmap_surface *sfc = &vc->osd_surfaces[index];
++    int i;
++
++//    fprintf(stderr,"draw_osd_part\n");
+     for (i = 0; i < sfc->num_targets; i++) {
+         struct osd_target *target = sfc->targets + i;
+         if (target->tex)
+@@ -790,6 +928,7 @@ static void draw_osd_part(struct vo *vo, int index)
      }
  }
  
-@@ -827,6 +941,7 @@ static int preinit(struct vo *vo)
++*/
+ static void draw_osd_cb(void *ctx, struct sub_bitmaps *imgs)
+ {
+     struct vo *vo = ctx;
+@@ -829,6 +968,7 @@ static int preinit(struct vo *vo)
      SDL_SetHintWithPriority(SDL_HINT_RENDER_VSYNC, vc->vsync ? "1" : "0",
                              SDL_HINT_OVERRIDE);
  
@@ -331,7 +358,7 @@ index adfcfb43d8..92af124b2d 100644
      if (SDL_InitSubSystem(SDL_INIT_VIDEO)) {
          MP_ERR(vo, "SDL_Init failed\n");
          return -1;
-@@ -834,7 +949,8 @@ static int preinit(struct vo *vo)
+@@ -836,7 +976,8 @@ static int preinit(struct vo *vo)
  
      // then actually try
      vc->window = SDL_CreateWindow("MPV", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -341,8 +368,8 @@ index adfcfb43d8..92af124b2d 100644
      if (!vc->window) {
          MP_ERR(vo, "SDL_CreateWindow failed\n");
          return -1;
-@@ -896,17 +1012,53 @@ static void draw_image(struct vo *vo, mp_image_t *mpi)
-         talloc_free(mpi);
+@@ -894,17 +1035,52 @@ static void draw_frame(struct vo *vo, struct vo_frame *frame)
+         SDL_UnlockTexture(vc->tex);
      }
  
 -    SDL_Rect src, dst;
@@ -354,8 +381,6 @@ index adfcfb43d8..92af124b2d 100644
 -    dst.y = vc->dst_rect.y0;
 -    dst.w = vc->dst_rect.x1 - vc->dst_rect.x0;
 -    dst.h = vc->dst_rect.y1 - vc->dst_rect.y0;
--
--    SDL_RenderCopy(vc->renderer, vc->tex, &src, &dst);
 +    if (vc->display_orientation == SDL_ORIENTATION_LANDSCAPE ||
 +        vc->display_orientation == SDL_ORIENTATION_LANDSCAPE_FLIPPED){
 +
@@ -378,11 +403,11 @@ index adfcfb43d8..92af124b2d 100644
 +            dstrect.x = ((H - W) / 2 - 1);
 +            dstrect.y = (W - H) / 2  + (vo->dheight - W)/2;
 +        }
+ 
+-    SDL_RenderCopy(vc->renderer, vc->tex, &src, &dst);
 +        if (vc->display_orientation == SDL_ORIENTATION_LANDSCAPE){
-+            //SDL_Log("SDL_ORIENTATION_LANDSCAPE\n");
 +            SDL_RenderCopyEx(vc->renderer, vc->tex, NULL,  &dstrect, 270.0, NULL, SDL_FLIP_NONE);
 +        }else{
-+            //SDL_Log("SDL_ORIENTATION_LANDSCAPE_FLIPPED\n");
 +            SDL_RenderCopyEx(vc->renderer, vc->tex, NULL,  &dstrect, 90.0, NULL, SDL_FLIP_NONE);
 +        }
 +    }else{
