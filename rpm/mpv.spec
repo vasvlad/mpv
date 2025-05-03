@@ -184,5 +184,7 @@ cp %{SOURCE6} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/86x86/apps/org.meecast.m
 %{_libdir}/pkgconfig/%{origname}.pc
 
 %changelog
+* Sat May 03 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.37.0-1
+- Fixed subtitle problem in osd
 * Thu Apr 26 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.35.1-3
 - Adpated to SailfishOS and AuroraOS
