@@ -1,8 +1,28 @@
 diff --git a/meson.build b/meson.build
-index fdfc526525..fac958e5f3 100644
+index fdfc526525..8d9a9cdee5 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -973,9 +973,6 @@ wayland = {
+@@ -766,6 +766,19 @@ if features['zlib']
+     dependencies += zlib
+ endif
+ 
++keepaliveglib = dependency('keepalive-glib', required: get_option('keepaliveglib'))
++features += {'keepaliveglib': keepaliveglib.found()}
++if features['keepaliveglib']
++    dependencies += keepaliveglib
++#    dependencies += cc.find_library('keepdisplayon')
++    dependencies += cc.find_library('keepdisplayonplugin')
++endif
++
++dbus = dependency('dbus-1', required: get_option('dbus'))
++features += {'dbus': dbus.found()}
++if features['dbus']
++    dependencies += dbus
++endif
+ 
+ # audio output dependencies
+ alsa = dependency('alsa', version: '>= 1.0.18', required: get_option('alsa'))
+@@ -973,9 +986,6 @@ wayland = {
               dependency('wayland-cursor', version: '>= 1.20.0', required: get_option('wayland')),
               dependency('wayland-protocols', version: '>= 1.25', required: get_option('wayland')),
               dependency('xkbcommon', version: '>= 0.3.0', required: get_option('wayland'))],
@@ -12,7 +32,7 @@ index fdfc526525..fac958e5f3 100644
      'scanner': find_program('wayland-scanner', required: get_option('wayland')),
  }
  wayland_deps = true
-@@ -985,7 +982,7 @@ foreach dep: wayland['deps']
+@@ -985,7 +995,7 @@ foreach dep: wayland['deps']
          break
      endif
  endforeach
@@ -21,7 +41,7 @@ index fdfc526525..fac958e5f3 100644
  
  if features['wayland']
      subdir(join_paths('video', 'out'))
-@@ -1049,7 +1046,7 @@ if features['xv']
+@@ -1049,7 +1059,7 @@ if features['xv']
      sources += files('video/out/vo_xv.c')
  endif
  
@@ -30,6 +50,19 @@ index fdfc526525..fac958e5f3 100644
      sources += ('video/out/present_sync.c')
  endif
  
+diff --git a/meson_options.txt b/meson_options.txt
+index b0edb8018f..ae7f0879aa 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -37,6 +37,8 @@ option('vector', type: 'feature', value: 'auto', description: 'GCC vector instru
+ option('win32-threads', type: 'feature', value: 'auto', description: 'win32 threads')
+ option('zimg', type: 'feature', value: 'auto', description: 'libzimg support (high quality software scaler)')
+ option('zlib', type: 'feature', value: 'auto', description: 'zlib')
++option('keepaliveglib', type: 'feature', value: 'auto', description: 'libkeepalive-glib-devel')
++option('dbus', type: 'feature', value: 'auto', description: 'dbus')
+ 
+ # audio output features
+ option('alsa', type: 'feature', value: 'auto', description: 'ALSA audio output')
 diff --git a/player/command.c b/player/command.c
 index 8bff0cd6f9..a8845a0252 100644
 --- a/player/command.c
@@ -133,8 +166,121 @@ index 27cf9b4449..2a937bcf0a 100644
      if (opts->operation_mode == 1) {
          m_config_set_profile(mpctx->mconfig, "builtin-pseudo-gui",
                               M_SETOPT_NO_OVERWRITE);
+diff --git a/player/scripting.c b/player/scripting.c
+index 0b200815f1..769f6e248c 100644
+--- a/player/scripting.c
++++ b/player/scripting.c
+@@ -42,8 +42,10 @@
+ #include "libmpv/render.h"
+ #include "libmpv/stream_cb.h"
+ 
++extern int mpv_open_keepdisplay(mpv_handle *mpv);
+ extern const struct mp_scripting mp_scripting_lua;
+ extern const struct mp_scripting mp_scripting_cplugin;
++extern const struct mp_scripting mp_scripting_cplugin_static;
+ extern const struct mp_scripting mp_scripting_js;
+ extern const struct mp_scripting mp_scripting_run;
+ 
+@@ -53,6 +55,7 @@ static const struct mp_scripting *const scripting_backends[] = {
+ #endif
+ #if HAVE_CPLUGINS
+     &mp_scripting_cplugin,
++    &mp_scripting_cplugin_static,
+ #endif
+ #if HAVE_JAVASCRIPT
+     &mp_scripting_js,
+@@ -257,6 +260,50 @@ static void load_builtin_script(struct MPContext *mpctx, int slot, bool enable,
+     }
+ }
+ 
++void load_static_plugin_keepdisplay(struct MPContext *mpctx){
++    const struct mp_scripting *backend = NULL;
++    char *script_name = NULL;
++    void *tmp = talloc_new(NULL);
++    for (int n = 0; scripting_backends[n]; n++) {
++        const struct mp_scripting *b = scripting_backends[n];
++        if (strcasecmp("a", b->file_ext) == 0) {
++            backend = b;
++            fprintf(stderr,"find backend load_static_plugin_keepdisplay\n");
++            break;
++        }
++    }
++    struct mp_script_args *arg = talloc_ptrtype(NULL, arg);
++    *arg = (struct mp_script_args){
++        .mpctx = mpctx,
++        .backend = backend,
++        // Create the client before creating the thread; otherwise a race
++        // condition could happen, where MPContext is destroyed while the
++        // thread tries to create the client.
++        .client = mp_new_client(mpctx->clients, script_name),
++    };
++    if (!arg->client) {
++        MP_ERR(mpctx, "Failed to create client for script: %s\n", script_name);
++        talloc_free(arg);
++        return -1;
++    }
++    mp_client_set_weak(arg->client);
++    arg->log = mp_client_get_log(arg->client);
++    int64_t id = mpv_client_id(arg->client);
++
++    MP_DBG(arg, "Loading %s script %s...\n", backend->name, arg->filename);
++    mp_thread thread;
++    if (mp_thread_create(&thread, script_thread, arg)) {
++        mpv_destroy(arg->client);
++        talloc_free(arg);
++        MP_ERR(mpctx, "Failed to create thread for script: %s\n", script_name);
++        talloc_free(tmp);
++        return;
++    }
++    mp_thread_detach(thread);
++
++    talloc_free(tmp);
++
++}
+ void mp_load_builtin_scripts(struct MPContext *mpctx)
+ {
+     load_builtin_script(mpctx, 0, mpctx->opts->lua_load_osc, "@osc.lua");
+@@ -265,6 +312,7 @@ void mp_load_builtin_scripts(struct MPContext *mpctx)
+     load_builtin_script(mpctx, 3, mpctx->opts->lua_load_console, "@console.lua");
+     load_builtin_script(mpctx, 4, mpctx->opts->lua_load_auto_profiles,
+                         "@auto_profiles.lua");
++    load_static_plugin_keepdisplay(mpctx);
+ }
+ 
+ bool mp_load_scripts(struct MPContext *mpctx)
+@@ -372,6 +420,17 @@ static void init_sym_table(struct mp_script_args *args, void *lib) {
+ #undef INIT_SYM
+ }
+ 
++static int load_cplugin_static(struct mp_script_args *args)
++{
++    mpv_open_cplugin sym = (mpv_open_cplugin)mpv_open_keepdisplay;
++    if (!sym)
++        goto error;
++    return sym(args->client) ? -1 : 0;
++error: ;
++    MP_ERR(args, "C static plugin error: '%s'\n");
++    return -1;
++}
++
+ static int load_cplugin(struct mp_script_args *args)
+ {
+     void *lib = dlopen(args->filename, RTLD_NOW | RTLD_LOCAL);
+@@ -403,6 +462,12 @@ const struct mp_scripting mp_scripting_cplugin = {
+     .load = load_cplugin,
+ };
+ 
++const struct mp_scripting mp_scripting_cplugin_static = {
++    .name = "cpluginstatic",
++    .file_ext = "a",
++    .load = load_cplugin_static,
++};
++
+ #endif
+ 
+ static int load_run(struct mp_script_args *args)
 diff --git a/video/out/vo_sdl.c b/video/out/vo_sdl.c
-index 5f4c027ed5..88463ea935 100644
+index 5f4c027ed5..a542fb60d3 100644
 --- a/video/out/vo_sdl.c
 +++ b/video/out/vo_sdl.c
 @@ -29,6 +29,7 @@
@@ -154,7 +300,15 @@ index 5f4c027ed5..88463ea935 100644
  
      // options
      bool allow_sw;
-@@ -364,6 +367,16 @@ static void resize(struct vo *vo, int w, int h)
+@@ -197,6 +200,7 @@ struct priv {
+     bool vsync;
+ };
+ 
++
+ static bool lock_texture(struct vo *vo, struct mp_image *texmpi)
+ {
+     struct priv *vc = vo->priv;
+@@ -364,6 +368,16 @@ static void resize(struct vo *vo, int w, int h)
      vo->dheight = h;
      vo_get_src_dst_rects(vo, &vc->src_rect, &vc->dst_rect,
                           &vc->osd_res);
@@ -171,7 +325,7 @@ index 5f4c027ed5..88463ea935 100644
      SDL_RenderSetLogicalSize(vc->renderer, w, h);
      vo->want_redraw = true;
      vo_wakeup(vo);
-@@ -401,7 +414,8 @@ static void set_fullscreen(struct vo *vo)
+@@ -401,7 +415,8 @@ static void set_fullscreen(struct vo *vo)
  {
      struct priv *vc = vo->priv;
      struct mp_vo_opts *opts = vc->opts_cache->opts;
@@ -181,7 +335,7 @@ index 5f4c027ed5..88463ea935 100644
      SDL_bool prev_screensaver_state = SDL_IsScreenSaverEnabled();
  
      Uint32 fs_flag;
-@@ -440,6 +454,8 @@ static void update_screeninfo(struct vo *vo, struct mp_rect *screenrc)
+@@ -440,6 +455,8 @@ static void update_screeninfo(struct vo *vo, struct mp_rect *screenrc)
          return;
      }
      *screenrc = (struct mp_rect){0, 0, mode.w, mode.h};
@@ -190,7 +344,7 @@ index 5f4c027ed5..88463ea935 100644
  }
  
  static int reconfig(struct vo *vo, struct mp_image_params *params)
-@@ -520,8 +536,34 @@ static void wakeup(struct vo *vo)
+@@ -520,8 +537,34 @@ static void wakeup(struct vo *vo)
      SDL_PushEvent(&event);
  }
  
@@ -225,7 +379,7 @@ index 5f4c027ed5..88463ea935 100644
      int64_t wait_ns = until_time_ns - mp_time_ns();
      // Round-up to 1ms for short timeouts (100us, 1000us]
      if (wait_ns > MP_TIME_US_TO_NS(100))
-@@ -552,6 +594,37 @@ static void wait_events(struct vo *vo, int64_t until_time_ns)
+@@ -552,6 +595,37 @@ static void wait_events(struct vo *vo, int64_t until_time_ns)
          case SDL_QUIT:
              mp_input_put_key(vo->input_ctx, MP_KEY_CLOSE_WIN);
              break;
@@ -263,7 +417,7 @@ index 5f4c027ed5..88463ea935 100644
          case SDL_TEXTINPUT: {
              int sdl_mod = SDL_GetModState();
              int mpv_mod = 0;
-@@ -601,6 +674,7 @@ static void wait_events(struct vo *vo, int64_t until_time_ns)
+@@ -601,6 +675,7 @@ static void wait_events(struct vo *vo, int64_t until_time_ns)
              break;
          }
          case SDL_MOUSEMOTION:
@@ -271,7 +425,7 @@ index 5f4c027ed5..88463ea935 100644
              mp_input_set_mouse_pos(vo->input_ctx, ev.motion.x, ev.motion.y);
              break;
          case SDL_MOUSEBUTTONDOWN: {
-@@ -779,6 +853,70 @@ static void draw_osd_part(struct vo *vo, int index)
+@@ -779,6 +854,70 @@ static void draw_osd_part(struct vo *vo, int index)
      struct osd_bitmap_surface *sfc = &vc->osd_surfaces[index];
      int i;
  
@@ -342,7 +496,7 @@ index 5f4c027ed5..88463ea935 100644
      for (i = 0; i < sfc->num_targets; i++) {
          struct osd_target *target = sfc->targets + i;
          if (target->tex)
-@@ -790,6 +928,7 @@ static void draw_osd_part(struct vo *vo, int index)
+@@ -790,6 +929,7 @@ static void draw_osd_part(struct vo *vo, int index)
      }
  }
  
@@ -350,7 +504,7 @@ index 5f4c027ed5..88463ea935 100644
  static void draw_osd_cb(void *ctx, struct sub_bitmaps *imgs)
  {
      struct vo *vo = ctx;
-@@ -829,6 +968,7 @@ static int preinit(struct vo *vo)
+@@ -829,6 +969,7 @@ static int preinit(struct vo *vo)
      SDL_SetHintWithPriority(SDL_HINT_RENDER_VSYNC, vc->vsync ? "1" : "0",
                              SDL_HINT_OVERRIDE);
  
@@ -358,7 +512,7 @@ index 5f4c027ed5..88463ea935 100644
      if (SDL_InitSubSystem(SDL_INIT_VIDEO)) {
          MP_ERR(vo, "SDL_Init failed\n");
          return -1;
-@@ -836,7 +976,8 @@ static int preinit(struct vo *vo)
+@@ -836,7 +977,8 @@ static int preinit(struct vo *vo)
  
      // then actually try
      vc->window = SDL_CreateWindow("MPV", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -368,7 +522,7 @@ index 5f4c027ed5..88463ea935 100644
      if (!vc->window) {
          MP_ERR(vo, "SDL_CreateWindow failed\n");
          return -1;
-@@ -894,17 +1035,52 @@ static void draw_frame(struct vo *vo, struct vo_frame *frame)
+@@ -894,17 +1036,52 @@ static void draw_frame(struct vo *vo, struct vo_frame *frame)
          SDL_UnlockTexture(vc->tex);
      }
  
