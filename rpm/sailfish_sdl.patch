@@ -1,8 +1,8 @@
 diff --git a/meson.build b/meson.build
-index fdfc526525..8d9a9cdee5 100644
+index fdfc526525..b760454db6 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -766,6 +766,19 @@ if features['zlib']
+@@ -766,6 +766,20 @@ if features['zlib']
      dependencies += zlib
  endif
  
@@ -11,6 +11,7 @@ index fdfc526525..8d9a9cdee5 100644
 +if features['keepaliveglib']
 +    dependencies += keepaliveglib
 +#    dependencies += cc.find_library('keepdisplayon')
++    dependencies += cc.find_library('libkeepalive-glib')
 +    dependencies += cc.find_library('keepdisplayonplugin')
 +endif
 +
@@ -22,7 +23,7 @@ index fdfc526525..8d9a9cdee5 100644
  
  # audio output dependencies
  alsa = dependency('alsa', version: '>= 1.0.18', required: get_option('alsa'))
-@@ -973,9 +986,6 @@ wayland = {
+@@ -973,9 +987,6 @@ wayland = {
               dependency('wayland-cursor', version: '>= 1.20.0', required: get_option('wayland')),
               dependency('wayland-protocols', version: '>= 1.25', required: get_option('wayland')),
               dependency('xkbcommon', version: '>= 0.3.0', required: get_option('wayland'))],
@@ -32,7 +33,7 @@ index fdfc526525..8d9a9cdee5 100644
      'scanner': find_program('wayland-scanner', required: get_option('wayland')),
  }
  wayland_deps = true
-@@ -985,7 +995,7 @@ foreach dep: wayland['deps']
+@@ -985,7 +996,7 @@ foreach dep: wayland['deps']
          break
      endif
  endforeach
@@ -41,7 +42,7 @@ index fdfc526525..8d9a9cdee5 100644
  
  if features['wayland']
      subdir(join_paths('video', 'out'))
-@@ -1049,7 +1059,7 @@ if features['xv']
+@@ -1049,7 +1060,7 @@ if features['xv']
      sources += files('video/out/vo_xv.c')
  endif
  
