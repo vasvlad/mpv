@@ -185,9 +185,9 @@ sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse
 %{_libdir}/pkgconfig/%{origname}.pc
 
 %changelog
-* Fri May 08 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.37-2
+* Fri May 09 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.37-2
 - Added block display blanking for sailfisos(auroraos) devices
 * Sat May 03 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.37.0-1
 - Fixed subtitle problem in osd
-* Thu Apr 26 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.35.1-3
+* Sat Apr 26 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.35.1-3
 - Adpated to SailfishOS and AuroraOS
