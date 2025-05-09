@@ -1,7 +1,7 @@
 %define origname mpv
 Name:           org.meecast.mpvsdl
 Version:        0.37
-Release:        1
+Release:        2
 
 License:        GPL-2.0-or-later AND LGPL-2.1-or-later
 Summary:        Movie player playing most video formats and DVDs
@@ -30,6 +30,7 @@ BuildRequires:  SDL2-devel
 BuildRequires:  wayland-egl-devel
 BuildRequires:  wayland-protocols-devel
 BuildRequires:  libxkbcommon-devel-static
+BuildRequires:  libkeepalive-glib-devel
 
 %description
 Mpv is a movie player based on MPlayer and mplayer2. It supports a wide variety
@@ -184,6 +185,8 @@ sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse
 %{_libdir}/pkgconfig/%{origname}.pc
 
 %changelog
+* Fri May 08 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.37-2
+- Added block display blanking for sailfisos(auroraos) devices
 * Sat May 03 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.37.0-1
 - Fixed subtitle problem in osd
 * Thu Apr 26 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.35.1-3
