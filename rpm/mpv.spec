@@ -30,6 +30,7 @@ BuildRequires:  SDL2-devel
 BuildRequires:  wayland-egl-devel
 BuildRequires:  wayland-protocols-devel
 BuildRequires:  libxkbcommon-devel-static
+BuildRequires:  libkeepalive-glib-devel
 
 %description
 Mpv is a movie player based on MPlayer and mplayer2. It supports a wide variety
