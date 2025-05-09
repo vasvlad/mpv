@@ -1,7 +1,7 @@
 %define origname mpv
 Name:           org.meecast.mpvsdl
 Version:        0.37
-Release:        1
+Release:        2
 
 License:        GPL-2.0-or-later AND LGPL-2.1-or-later
 Summary:        Movie player playing most video formats and DVDs
@@ -193,7 +193,9 @@ sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse
 %{_libdir}/pkgconfig/%{origname}.pc
 
 %changelog
+* Fri May 09 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.37-2
+- Added block display blanking for sailfishos(auroraos) devices
 * Sat May 03 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.37.0-1
 - Fixed subtitle problem in osd
-* Thu Apr 26 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.35.1-3
+* Sat Apr 26 2025 Vlad Vasilyeu <vasvlad@gmail.com> - 0.35.1-3
 - Adpated to SailfishOS and AuroraOS
