@@ -100,7 +100,7 @@ install -p -m644 -D %{SOURCE1} build/linux/input-event-codes.h
 
 %build
 pushd build
-meson -Dlua=enabled -Dsdl2=enabled -Dgl=enabled -Dwayland=enabled -Ddefault_library=static -Dlibmpv=true --prefix=/usr --prefer-static ../
+meson -Dlua=enabled -Dsdl2=enabled -Dgl=enabled -Dwayland=disabled -Ddefault_library=static -Dlibmpv=true --prefix=/usr --prefer-static ../
 ninja
 popd
 
@@ -153,7 +153,7 @@ mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
 #mv $RPM_BUILD_ROOT/usr/lib/lib%{origname}.a $RPM_BUILD_ROOT/%{_libdir}/
 #mv $RPM_BUILD_ROOT/usr/lib/pkgconfig/%{origname}.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/
 sed -i 's/\/usr\/lib/\/usr\/lib64/g' $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
-sed -i "s/-lmpv/\/usr\/lib64\/libmpv.a \/usr\/lib64\/libavfilter.a \/usr\/lib64\/libavformat.a \/usr\/lib64\/libavcodec.a \/usr\/lib64\/libswscale.a \/usr\/lib64\/libswresample.a \/usr\/lib64\/libavdevice.a \/usr\/lib64\/libavutil.a \/usr\/lib64\/liblua.a \/usr\/lib64\/libvpx.a \/usr\/lib64\/libwebpmux.a \/usr\/lib64\/libwebp.a \/usr\/lib64\/libwebpdecoder.a \/usr\/lib64\/libtheora.a \/usr\/lib64\/libspeex.a \/usr\/lib64\/libopenjp2.a \/usr\/lib64\/libvorbis.a \/usr\/lib64\/libvorbisenc.a \/usr\/lib64\/libopus.a \/usr\/lib64\/libogg.a \/usr\/lib64\/libxkbcommon.a \/usr\/lib64\/libdrm.a \/usr\/lib64\/libass.a \/usr\/lib64\/libfontconfig.a \/usr\/lib64\/libfreetype.a  \/usr\/lib64\/libfribidi.a \/usr\/lib64\/libharfbuzz.a \/usr\/lib64\/libgraphite2.a \/usr\/lib64\/libexpat.a \/usr\/lib64\/libpng.a \/usr\/lib64\/libjpeg.a \/usr\/lib64\/libz.a -pthread -lssl -lcrypto -lbz2/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
+sed -i "s/-lmpv/\/usr\/lib64\/libmpv.a \/usr\/lib64\/libavfilter.a \/usr\/lib64\/libavformat.a \/usr\/lib64\/libavcodec.a \/usr\/lib64\/libswscale.a \/usr\/lib64\/libswresample.a \/usr\/lib64\/libavdevice.a \/usr\/lib64\/libavutil.a \/usr\/lib64\/liblua.a \/usr\/lib64\/libvpx.a \/usr\/lib64\/libwebpmux.a \/usr\/lib64\/libwebp.a \/usr\/lib64\/libwebpdecoder.a \/usr\/lib64\/libplacebo.a \/usr\/lib64\/libtheora.a \/usr\/lib64\/libspeex.a \/usr\/lib64\/libopenjp2.a \/usr\/lib64\/libvorbis.a \/usr\/lib64\/libvorbisenc.a \/usr\/lib64\/libopus.a \/usr\/lib64\/libogg.a \/usr\/lib64\/libxkbcommon.a \/usr\/lib64\/libdrm.a \/usr\/lib64\/libass.a \/usr\/lib64\/libfontconfig.a \/usr\/lib64\/libfreetype.a  \/usr\/lib64\/libfribidi.a \/usr\/lib64\/libharfbuzz.a \/usr\/lib64\/libgraphite2.a \/usr\/lib64\/libexpat.a \/usr\/lib64\/libpng.a \/usr\/lib64\/keepdisplayonplugin.a \/usr\/lib64\/libkeepalive-glib.a \/usr\/lib64\/libjpeg.a \/usr\/lib64\/libz.a -pthread -lglib-2.0 -ldbus-1 -lssl -lcrypto -lbz2/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
 sed -i "s/Requires: .*/Requires: wayland-client >=  1.15.0, sdl2, zlib, libpulse >=  1.0, wayland-cursor >=  1.15.0, wayland-protocols >=  1.15, egl >  1.4.0, wayland-egl >=  9.0.0/" $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/%{origname}.pc
 
 
